@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Test Page 1</h1>
+<a href="https://DimiDL.github.io/navigate/2.html">To Page 2</a><br>
+<a href="https://DimiDL.github.io/navigate/nested_iframe.html">Nested Same-Origin IFrame</a><br>
+<a href="https://DimiDL.github.io/navigate/nested_iframe_cross.html">Nested Cross-Origin IFrame</a><br>
+
+<script>
+let parentWindow = window.parent;
+if (parentWindow != window.top) {
+  dump("[Dimi]Parent is not top window\n");
+} else {
+  dump("[Dimi]Parent is top window\n");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>(dimi)Nested Iframe Grand Child</h1>
+
+<script>
+let parentWindow = window.parent;
+if (parentWindow != window.top) {
+  dump("[Dimi]Parent is not top window\n");
+} else {
+  dump("[Dimi]Parent is top window\n");
+}
+</script>
+
+</body>
+</html>
