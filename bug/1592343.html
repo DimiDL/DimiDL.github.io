@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Bug 1592343</h2>
+<p>This script should be blocked</p>
+
+<script>
+function onJSload() {
+  console.log("bad script is loaded");
+  alert("bad script is loaded");
+}
+</script>
+<script src="https://j1.58cdn.com.cn/m58/m3/js/jq.mobi.min_v20190517180203.js" onload='onJSload()'></script>
+
+
+
+</body>
+</html>
