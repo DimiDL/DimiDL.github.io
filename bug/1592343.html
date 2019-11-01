@@ -8,22 +8,22 @@
 <div id="unwantedMobile">Unwanted Mobile not loaded</div>
 <div id="unwantedDesktop">Unwanted Desktop not loaded</div>
 <div id="safe">Safe script not loaded</div>
+
 <script>
 function onMobileJSload() {
-  document.getElementById("mobileUnwanted").innerHTML="Unwanted Mobile Loaded";
+  document.getElementById("unwantedMobile").innerHTML = "Unwanted Mobile Loaded";
 }
-function onMobileJSload() {
-  document.getElementById("desktopUnwanted").innerHTML="Unwanted Desktop Loaded";
+function onDesktopUnwantedJSload() {
+  document.getElementById("unwantedDesktop").innerHTML = "Unwanted Desktop Loaded";
 }
-function onMobileJSload() {
-  document.getElementById("safe").innerHTML="Safe scriptLoaded";
+function onSafeJSload() {
+  document.getElementById("safe").innerHTML = "Safe scriptLoaded";
 }
 </script>
 
 <script src="https://j1.58cdn.com.cn/m58/m3/js/jq.mobi.min_v20190517180203.js" onload='onMobileJSload()'></script>
 <script src="https://testsafebrowsing.appspot.com/s/bad_assets/script.js" onload='onDesktopUnwantedJSload()'></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.2.0/lodash.onJSload()" onload='onSafeJSload()'></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.2.0/lodash.js" onload='onSafeJSload()'></script>
 
 
 </body>
