@@ -26,6 +26,10 @@
       <button onclick='openWindowCrossOrigin()'>Call window.open()</button><br />
       <p>Return value of Window.Open():</p><pre id='window_open2'></pre>
 
+      <h3>window.open redirect to cross-origin</h3>
+      <button onclick='openWindowRedirect()'>Call window.open()</button><br />
+      <p>Return value of Window.Open():</p><pre id='window_open3'></pre>
+
       <script>
         function setAndGetCookie() {
           // Try to set a cookie
@@ -57,6 +61,9 @@
         }
         function openWindowCrossOrigin() {
           window.open("https://jesilin.github.io/index.html");
+        }
+        function openWindowRedirect() {
+          window.open("https://bit.ly/3ae83BW");
         }
       </script>
     </body>
