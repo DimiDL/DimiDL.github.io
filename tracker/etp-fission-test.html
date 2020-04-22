@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>I am at dimidl.github.io</h1>
+<h3>window.open same-origin</h3>
+<button onclick='openWindowSameOrigin()'>Call window.open()</button><br />
+
+<h3>window.open cross-origin</h3>
+<button onclick='openWindowCrossOrigin()'>Call window.open()</button><br />
+
+<script>
+  function openWindowSameOrigin() {
+    window.open("https://dimidl.github.io/index.html");
+  }
+  function openWindowCrossOrigin() {
+    window.open("https://jesilin.github.io/index.html");
+  }
+</script>
+
+<h2>HTML Tracker Iframes</h2>
+
+<iframe src="https://jesilin.github.io/tracker/testETPHeuristics.html" height="800" width="600"></iframe>
+<iframe src="https://jesilin.github.io/index.html" height="800" width="600"></iframe>
+<iframe src="https://dimidl.github.io/test/iframe/cross-origin-iframe.html" height="800" width="600"></iframe>
+<iframe src="https://dimidl.github.io/index.html" height="800" width="600"></iframe>
+<br>
+
+</body>
+</html>
