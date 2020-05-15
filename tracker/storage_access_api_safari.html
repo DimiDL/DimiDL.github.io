@@ -16,30 +16,25 @@
   </head>
   <body>
     <div class="row">
-        <h3>englehardt-tracker.com</h3>
-        <h4>different site, cross-origin nested iframe</h4>
-        <iframe width=500 height=1000 src="https://senglehardt.com/test/dfpi/storage_access_api.html"></iframe>
-      <div class="column">
-        <h3>englehardt-tracker.com</h3>
-        <h4>different site, cross-origin iframe</h4>
-        <iframe width=500 height=1000 src="https://englehardt-tracker.com/set_storage_with_sa_api.html"></iframe>
-      </div>
-      <div class="column">
-        <h3>englehardt-tracker.com</h3>
-        <h4>different site, cross-origin iframe</h4>
-        <iframe width=500 height=1000 src="https://englehardt-tracker.com/set_storage_with_sa_api.html"></iframe>
-
-        <p> Access denied? Try <a rel=noopener target=_blank href="https://englehardt-tracker.com/index.html">interacting with the third-party first</a>.
-        Note that this link <b>does not</b> have an opener relationship, so it shouldn't lead to storage activation by heuristic.</p>
-        <br />
-
+        <h3>jesilin.github.io</h3>
+        <h4>first-level tracker iframe</h4>
+        <iframe width=300 height=1000 src="https://jesilin.github.io/tracker/testETPHeuristics.html"></iframe>
         <p>Click
-        <button onclick="window.open('https://englehardt-tracker.com/index.html', '_blank', 'location,width=1200,height=900');">
+        <button onclick="window.open('https://jesilin.githun.io/index.html', '_blank', 'location,width=1200,height=900');">
           here
         </button>
         to activate the window.open heuristic and relax storage isolation for
         englehardt-tracker.com.
         </p>
+      <div class="column">
+        <h3>jesilin.github.io</h3>
+        <h4>first-level tracker iframe</h4>
+        <iframe width=300 height=1000 src="https://jesilin.github.io/tracker/testETPHeuristics.html"></iframe>
+      </div>
+      <div class="column">
+        <h3>jesilin.github.io</h3>
+        <h4>second-level tracker iframe</h4>
+        <iframe width=300 height=1000 src="https://dimidl.github.io/tracker/iframe-etptest.html"></iframe>
       </div>
     </div>
   </body>
