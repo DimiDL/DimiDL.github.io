@@ -1,0 +1,126 @@
+<!doctype html>
+<html manifest="manifest.aspx">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>AppCache Test Page</title>
+<style>
+
+body 
+{
+	font-family:"Courier New", Courier, monospace;
+}
+.auto-style1 {
+	color: #4DC339;
+}
+.auto-style2 {
+	color: #C33939;
+}
+.auto-style4 {
+	color: #F5F33D;
+}
+.auto-style3 {
+	color: #ECEA3F;
+}
+</style>
+<script type="text/javascript">
+var iStartAt = new Date().valueOf();
+function getACStatus()
+{
+try{
+	var sCacheStatus = "Not supported";
+	if (window.applicationCache) 
+	{
+	   var oAppCache = window.applicationCache;
+	   switch ( oAppCache.status ) 
+	   {
+	      case oAppCache.UNCACHED : 
+	         sCacheStatus = "Not cached"; 
+	         break;
+	      case oAppCache.IDLE : 
+	         sCacheStatus = "Idle"; 
+	         break;
+	      case oAppCache.CHECKING : 
+	         sCacheStatus = "Checking"; 
+	         break;
+	      case oAppCache.DOWNLOADING : 
+	         sCacheStatus = "Downloading"; 
+	         break;
+	      case oAppCache.UPDATEREADY : 
+	         sCacheStatus = "Update ready"; 
+	         break;
+	      case oAppCache.OBSOLETE : 
+	         sCacheStatus = "Obsolete"; 
+	         break;
+	      default : 
+	        sCacheStatus = "Unexpected Status ( " + 
+	                       oAppCache.status.toString() + ")";
+	        break;
+	   }
+	}
+	return sCacheStatus;
+	}
+	catch (e)
+	{
+		alert(e);
+	}
+}
+
+function doLoaded()
+{
+	try{
+	var sStatus = getACStatus();
+	LogString("Checked status: Result was " + sStatus);
+	document.getElementById("spanACStatus").innerText = sStatus;
+	}
+	catch (e) { alert(e); }
+}
+
+function updateCache()
+{
+	LogString("Calling applicationCache.update()...");
+	var appCache = window.applicationCache;
+	appCache.update();
+}
+
+
+function LogString(s)
+{
+	var sElement = document.getElementById("spanEvents");
+	sElement.innerHTML = (sElement.innerHTML + "<br />" + (new Date().valueOf() - iStartAt) + ": " + s);
+}
+
+window.addEventListener("load", doLoaded, false);
+
+function logACEvent(e)
+{
+	LogString("Status Change: " + getACStatus());
+}
+
+var appCache = window.applicationCache;
+appCache.addEventListener('error', logACEvent, false);
+appCache.addEventListener('checking', logACEvent, false);
+appCache.addEventListener('noupdate', logACEvent, false);
+appCache.addEventListener('downloading', logACEvent, false);
+appCache.addEventListener('progress', logACEvent, false);
+appCache.addEventListener('updateready', logACEvent, false);
+appCache.addEventListener('cached', logACEvent, false);
+</script>
+</head>
+
+<body>
+AppContainer Status on page load: <span id="spanACStatus">-</span>
+<p>
+<button type="button" onclick="updateCache();">Try appCache.Update()</button>
+</p>
+<p>
+<hr />
+EventLog: <span id="spanEvents"></span>
+
+<table >
+<tr><td>Here's an image that will be <span class="auto-style1"><strong>stored in the AppCache</strong></span></td><td><img height="50" src="red.jpg" /></td></tr>
+<tr><td>Here's an image to <span class="auto-style2"><strong>pull from the network</strong></span> only; (broken offline)</td><td><img height="50"  src="green.jpg" /></td> </tr>
+<tr><td>Here's an image to store and use if <span class="auto-style4"><strong>network is unreachable</strong></span></td><td><img height="50" src="yellow.jpg" /></td></tr>
+</table>
+</body>
+
+</html>
