@@ -1,8 +1,26 @@
-<html manifest="manifest.aspx">
+<html manifest="html5/test.appcache">
+
 <head>
-<title>App Cache</title>
+<title>HTML5</title>
 </head>
 <body>
-App Cache test 2
+
+<h3>Application Cache Test</h3>
+<div id="images">
+  <p>Current network status: <span id="state"></span></p>
+  <script>
+    const state = document.getElementById('state')
+    setInterval(function () {
+      state.className = navigator.onLine ? 'online' : 'offline';
+      // eslint-disable-next-line no-unsanitized/property
+      state.innerHTML = navigator.onLine ? 'online' : 'offline';
+    }, 250);
+  </script>
+  <img id="red" src="html5/red.jpg">
+  <img id="blue" src="html5/blue.jpg">
+  <img id="green" src="html5/green.jpg">
+  <img id="yellow" src="html5/yellow.jpg">
+</div>
+
 </body>
 </html>
