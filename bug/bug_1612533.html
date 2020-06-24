@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Bug 1612533</title>
+</head>
+<body>
+<div id="content">Report me please!!!</div>
+<script>
+
+if (window.location.href.includes("exit")) {
+  let content = document.getElementById("content");
+  content.innerHTML = "Haha, Fail to report!!!";
+}
+
+window.onbeforeunload = function() {
+  setTimeout(function () {
+    window.location.href = window.location.href + "?exit";
+  }, 500);
+};
+
+</script>
+</body>
+</html>
