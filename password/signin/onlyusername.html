@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+  V1:username/password:yes<br></br>
+<form name="form1">
+  <label for="test1u">U:</label>
+  <input id="test1u" type="email" name="username"><br></br>
+  <label for="test1p">Password:</label>
+  <input id="test1p" type="password"><br></br>
+</form>  
+  V2:type email, name username:yes<br></br>
+<form name="form2">
+  <label for="test2u">U:</label>
+  <input id="test2u" type="email" name="username"><br></br>
+</form>
+  V3:type email, name name:no<br></br>
+<form name="form3">
+  <input id="test3u" type="email" name="name"><br></br>
+</form>
+  V4:type email, name name password:yes<br></br>
+  V5:type text, name username:yes<br></br>
+  V6:type text, name name, autocomplete username:yes<br></br>
+  V7:type text, name name, autocomplete email:no<br></br>
+  V8:type email, name email, autocomplete email:no<br></br>
+  V9:type email, name email, autocomplete email, placeholder username:no<br></br>
+ V10:type email, name email, autocomplete email, id username:no<br></br>
+ V11:type email, name username, autocomplete email, id username:yes<br></br>
+ V12:form id/name login:
+<form id="Login" name="Login">
+  <input id="test12u" type="email" name="email"><br></br>
+</form>
+ V13:form id/name form13:no:
+<form id="form13" name="form13">
+  <input id="test13u" type="email" name="email"><br></br>
+</form>
+ V14:form id/name Login, two input fields:No:
+<form id="Login" name="Login">
+  <input id="test14u1" type="email" name="email"><br></br>
+  <input id="test14u2" type="text" name="code"><br></br>
+</form>
+ V15:form id/name form15:no:
+<form id="form15" name="form15">
+  <label for="test15u">Username:</label>
+  <input id="test15u" type="email" name="email"><br></br>
+</form>
+ V16:form name username:no:
+<form id="form16" name="form16">
+  <input id="test16u1" type="email" name="username"><br></br>
+  <input id="test16u2" type="text" name="code"><br></br>
+</form>
+ V17:form name username:no:
+<form id="form17" name="form17">
+  <input id="test17u1" type="email" name="username"><br></br>
+</form>
+ V18:form id/name signup:
+<form id="signup" name="signup">
+  <input id="test18u" type="email" name="email"><br></br>
+</form>
+</body>
+</html>
