@@ -16,5 +16,19 @@
   });
 </script>
 
+<h2>Moz</h2>
+
+<p><a href="https://www.mozilla.org/en-US/privacy/firefox/">Link to</a></p>
+<button id="btn" type="button">Window.Location</button>
+<form method="get" action="https://www.mozilla.org/en-US/privacy/firefox/">
+    <button type="submit">Submit Form</button>
+</form>
+
+<script>
+  document.getElementById("btn").addEventListener('click', event => {
+    window.location.href = "https://www.mozilla.org/en-US/privacy/firefox/";
+  });
+</script>
+
 </body>
 </html>
