@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+Credit Card tests:
+<label for="number_of_inputs">Number of input fields (1-1000):</label>
+<input type="number" id="number_of_inputs" name="number_of_inputs" min="1" max="1000" value=100>
+<input type="button" id="generate_form" value="Create Form">
+<form id="form"></form>
+  
+<script>
+  function generateForm() {
+    const number_of_inputs = document.getElementById('number_of_inputs').value;
+    console.log("haha:" + number_of_inputs);
+    const form = document.getElementById('form');
+    form.innerHTML = '';
+    for (let i = 0; i < number_of_inputs; i++) {
+      let element = document.createElement("input");
+      element.type = "text";
+      element.name = "field " + i;
+      form.appendChild(element);
+    }
+  }
+  const button = document.getElementById('generate_form');
+  button.addEventListener('click', generateForm);
+
+</script>
+
+</body>
+</html>
