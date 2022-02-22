@@ -34,6 +34,20 @@
       <input type="submit" value="Submit">
       <button type="reset">Reset</button>
     </p>
+    <div class="result1"></div> 
+    <div class="result2"></div> 
   </form>
+  <script>
+    const selectElement = document.querySelector('.ice-cream');
+    selectElement.addEventListener('change', (event) => {
+      const result = document.querySelector('.result1');
+      result.textContent = `You like ${event.target.value} [change]`;
+    });
+
+    selectElement.addEventListener('input', (event) => {
+      const result = document.querySelector('.result2');
+      result.textContent = `You like ${event.target.value} [input]`;
+    });
+  </script>
 </body>
 </html>
