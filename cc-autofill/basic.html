@@ -53,5 +53,27 @@
       <button type="reset">Reset</button>
     </p>
   </form>
+    <h2>Credit Card Form without Expiration Year (with Expiration Month)</h1>
+  <form class="alignedLabels">
+    <label>Credit Card Type:
+      <select autocomplete="cc-type">
+        <option value="0">Select</option>
+        <option value="A">Amex</option>
+        <option value="D">Discover</option>
+        <option value="J">Jcb</option>
+        <option value="M">Master</option>
+        <option value="V">Visa</option>
+      </select>
+    </label>
+    <label>Name: <input autocomplete="cc-name"></label>
+    <label>Card Number: <input autocomplete="cc-number"></label>
+    <label>Expiration month: <input autocomplete="cc-exp-month"></label>
+
+    <label>CSC: <input autocomplete="cc-csc"></label>
+    <p>
+      <input type="submit" value="Submit">
+      <button type="reset">Reset</button>
+    </p>
+  </form>
 </body>
 </html>
