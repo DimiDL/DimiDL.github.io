@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Form Autofill Demo: Basic Credit Card @autocomplete</title>
+  <link rel="stylesheet" href="base.css"/>
+  <script type="text/javascript" src="base.js"></script>
+</head>
+<body>
+  <h1>Form Autofill Demo:</h1>
+  <h2>Basic Credit Card with @autocomplete</h1>
+  <form class="alignedLabels">
+      <label>Credit Card Type:
+      <select id="type" autocomplete="cc-type" readonly="readonly">
+        <option value="0">Select</option>
+        <option value="A">Amex</option>
+        <option value="D">Discover</option>
+        <option value="J">Jcb</option>
+        <option value="M">Master</option>
+        <option value="V">Visa</option>
+      </select>
+    </label>
+    <label>Name: <input id="name" autocomplete="cc-name" value="TestName"></label>
+    <label>Card Number: <input id="number" autocomplete="cc-number" value="4111111111111111" readonly="readonly"></label>
+    <label>Expiration month: <input id="month" autocomplete="cc-exp-month" value="2"></label>
+    <label>Expiration year: <input id="year" autocomplete="cc-exp-year" value="2030"></label>
+
+    <label>CSC: <input autocomplete="cc-csc"></label>
+    <p>
+      <input type="submit" value="Submit">
+      <button type="reset">Reset</button>
+    </p>
+  </form>
+</body>
+</html>
