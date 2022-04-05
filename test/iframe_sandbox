@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<iframe src='https://jesilin.github.io/'></iframe>
+<iframe src='https://jesilin.github.io/' sandbox="allow-same-origin"></iframe>
+<iframe src='about:blank'></iframe>
+<iframe src='about:blank' sandbox="allow-same-origin"></iframe>
+<iframe srcdoc='<p>Hello world!</p>'></iframe>
+<iframe srcdoc='<p>Hello world!</p>' sandbox="allow-same-origin"></iframe>
+
+</body>
+</html>
