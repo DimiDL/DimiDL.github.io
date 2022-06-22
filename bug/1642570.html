@@ -11,17 +11,14 @@
   BBB<input name="i4"/>
   <input type="submit" value="Submit">
   <input id="reset" type="button" value="Reset AAA to BBB">
-</form> 
+</form>
 
-  <script>
-  const button = document.querySelector('#reset');
+<script>
+  let button = document.getElementById('reset');
   button.addEventListener('click', updateButton);
 
 function updateButton() {
-  let input = document.querySelector('#reseted');
+  let input = document.getElementById('reseted');
   input.defaultValue = 'BBB'
 }
-
-
-</body>
-</html>
+</script>
