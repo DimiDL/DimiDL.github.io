@@ -15,19 +15,21 @@
 </form>
 
 <script>
+  function updateButton() {
+    let input = document.getElementById('reseted');
+    input.defaultValue = 'BBB'
+  }
+  function updateButton2() {
+    let input = document.getElementById('reseted');
+    input.value = 'CCC'
+  }
+  
   let button = document.getElementById('reset');
-  button.addEventListener('click', reset2);
+  button.addEventListener('click', updateButton);
 
-  let button = document.getElementById('reset2');
+  button = document.getElementById('reset2');
   button.addEventListener('click', updateButton2);
   
-function updateButton() {
-  let input = document.getElementById('reseted');
-  input.defaultValue = 'BBB'
-}
-function updateButton2() {
-  let input = document.getElementById('reseted');
-  input.value = 'CCC'
-}
+
   
 </script>
