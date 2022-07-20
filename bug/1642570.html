@@ -10,15 +10,24 @@
   AAA(Will be reset default value)<input id="reseted" name="i3" value="AAA"/>
   BBB<input name="i4"/>
   <input type="submit" value="Submit">
-  <input id="reset" type="button" value="Reset AAA to BBB">
+  <input id="reset" type="button" value="Reset AAA to BBB (defaultValue)">
+  <input id="reset2" type="button" value="Reset AAA to CCC (value)">
 </form>
 
 <script>
   let button = document.getElementById('reset');
-  button.addEventListener('click', updateButton);
+  button.addEventListener('click', reset2);
 
+    let button = document.getElementById('reset');
+  button.addEventListener('click', updateButton2);
+  
 function updateButton() {
   let input = document.getElementById('reseted');
   input.defaultValue = 'BBB'
 }
+function updateButton2() {
+  let input = document.getElementById('reseted');
+  input.value = 'CCC'
+}
+  
 </script>
