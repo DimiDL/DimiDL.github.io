@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Form Autofill Demo: Basic Credit Card @autocomplete</title>
+  <link rel="stylesheet" href="./heuristic-test.css"/>
+  <script type="text/javascript" src="base.js"></script>
+</head>
+<body>
+  <div class="outter">
+    <h2>All fields are in the same form</h2>
+    <h2>cc-number in its own form</h2>
+    <h2>every field in its own form</h2>
+    <div class="autocomplete">
+      <form>
+          <label>Card Number:</label><input id="cc-number" placeholder="credit card number" autocomplete="cc-number">
+          <label>Name:</label><input id="cc-name" placeholder="card holder name" autocomplete="cc-name">
+          <label>Expiration month:</label><input id="cc-exp-month" placeholder="expiration month" autocomplete="cc-exp-month">
+          <label>Expiration year:</label><input id="cc-exp-year" placeholder="expiration year" autocomplete="cc-exp-year">
+          <label>CSC:</label> <input id="cc-security" autocomplete="cc-csc">
+          <input type="submit" value="Submit">
+      </form>
+    </div>
+
+    <div class="autocomplete">
+      <form>
+          <label>Card Number:</label><input id="cc-number" placeholder="credit card number" autocomplete="cc-number">
+      </form>
+      <form>
+          <label>Name:</label><input id="cc-name" placeholder="card holder name" autocomplete="cc-name">
+          <label>Expiration month:</label><input id="cc-exp-month" placeholder="expiration month" autocomplete="cc-exp-month">
+          <label>Expiration year:</label><input id="cc-exp-year" placeholder="expiration year" autocomplete="cc-exp-year">
+          <label>CSC:</label> <input id="cc-security" autocomplete="cc-csc">
+          <input type="submit" value="Submit">
+      </form>
+    </div>
+
+    <div class="autocomplete">
+        <form><label>Card Number:</label><input id="cc-number" placeholder="credit card number" autocomplete="cc-number"></form>
+        <form><label>Name:</label><input id="cc-name" placeholder="card holder name" autocomplete="cc-name"></form>
+        <form><label>Expiration month:</label><input id="cc-exp-month" placeholder="expiration month" autocomplete="cc-exp-month"></form>
+        <form><label>Expiration year:</label><input id="cc-exp-year" placeholder="expiration year" autocomplete="cc-exp-year"></form>
+        <form><label>CSC:</label> <input id="cc-security" autocomplete="cc-csc"></form>
+        <form><input type="submit" value="Submit"></form>
+    </div>
+
+    <div class="without-autocomplete">
+      <form>
+          <label>Card Number:</label><input id="cc-number" placeholder="credit card number">
+          <label>Name:</label><input id="cc-name" placeholder="card holder name">
+          <label>Expiration month:</label><input id="cc-exp-month" placeholder="expiration month">
+          <label>Expiration year:</label><input id="cc-exp-year" placeholder="expiration year">
+          <label>CSC:</label><input id="cc-security">
+          <input type="submit" value="Submit">
+      </form>
+    </div>
+
+    <div class="without-autocomplete">
+      <form>
+          <label>Card Number:</label><input id="cc-number" placeholder="credit card number">
+      </form>
+      <form>
+          <label>Name:</label><input id="cc-name" placeholder="card holder name">
+          <label>Expiration month:</label><input id="cc-exp-month" placeholder="expiration month">
+          <label>Expiration year:</label><input id="cc-exp-year" placeholder="expiration year">
+          <label>CSC:</label> <input id="cc-security">
+          <input type="submit" value="Submit">
+      </form>
+    </div>
+
+    <div class="without-autocomplete">
+      <form><label>Card Number:</label><input id="cc-number" placeholder="credit card number"></form>
+      <form><label>Name:</label><input id="cc-name" placeholder="card holder name"></form>
+      <form><label>Expiration month:</label><input id="cc-exp-month" placeholder="expiration month"></form>
+      <form><label>Expiration year:</label><input id="cc-exp-year" placeholder="expiration year"></form>
+      <form><label>CSC:</label> <input id="cc-security"></form>
+      <form><input type="submit" value="Submit"></form>
+    </div>
+  </div>
+</body>
+</html>
