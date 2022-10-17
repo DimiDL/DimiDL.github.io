@@ -1,16 +1,38 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registration, Login and Change Forms</title>
+</head>
+<body>
+    <form action="success.html">
+      <h2>Registration form (autocomplete off):</h2>
+      <input name="u" placeholder=username />
+      <input id="p" name="p" type=password placeholder=current-password autocomplete=off/>
+      <input id="test" type=submit value="Log In"/>
+    </form>
+  </div>
 
-<!-- Simplest form with username and password fields. -->
-  <input id="form-basic-username" name="username">
-  <input id="form-basic-password" name="password" type="password">
-  <input id="form-basic-submit" type="submit">
+<script>
+  console.log("hihi");
+  let e = document.getElementById("test");
+  e.addEventListener('click', function(event) {
+  console.log("onclicl");
+    alert("click");
+  });
+  let p = document.getElementById("p");
+  p.addEventListener("keypress", function(evt) {
+    console.log("keypress" + evt.which);
+  });
+  p.addEventListener("keydown", function(evt) {
+    console.log("keydown" + evt.which);
+  });
 
-  <button id="add">Add input[type=password]</button>
+  console.log("hihi");
 
-  <script>
-    document.getElementById("form-basic-submit").addEventListener("click", function() {
-      console.log("click");
-    });
-  </script>
+  onkeypress="myFunction()"
 
-</body></html>
+</script>
+</body>
+</html>
