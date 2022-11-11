@@ -2,6 +2,10 @@
   display: block;
   margin-block-start: 1em;
   margin-block-end: 1em;
-  width: 50em;
+  width: 25em;
   text-align: right;
+}
+
+.alignedLabels > label > input {
+  width: 50em;
 }
