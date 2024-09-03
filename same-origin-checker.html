@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Same-Origin Checker</title>
+</head>
+<body>
+    <h2>Same-Origin Checker</h2>
+    <label for="url1">URL 1:</label>
+    <input type="text" id="url1" placeholder="Enter first URL"><br><br>
+
+    <label for="url2">URL 2:</label>
+    <input type="text" id="url2" placeholder="Enter second URL"><br><br>
+
+    <button onclick="checkSameOrigin()">Check Same-Origin</button>
+
+    <p id="result"></p>
+
+    <script>
+        function getOrigin(url) {
+            try {
+                const parsedUrl = new URL(url);
+                return parsedUrl.origin;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function checkSameOrigin() {
+            const url1 = document.getElementById('url1').value;
+            const url2 = document.getElementById('url2').value;
+
+            const origin1 = getOrigin(url1);
+            const origin2 = getOrigin(url2);
+
+            if (origin1 && origin2) {
+                if (origin1 === origin2) {
+                    document.getElementById('result').innerText = "The URLs have the same origin.";
+                } else {
+                    document.getElementById('result').innerText = "The URLs do not have the same origin.";
+                }
+            } else {
+                document.getElementById('result').innerText = "Please enter valid URLs.";
+            }
+        }
+    </script>
+</body>
+</html>
