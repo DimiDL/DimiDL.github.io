@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registration Forms</title>
+  <link rel="stylesheet" href="css/base.css"/>
+</head>
+<body>
+    <h2>Registration form with email:</h2>
+    <form class="alignedLabels" action="success.html" method="GET">
+      <label>email: <input name="e" type="email" autocomplete="email" /></label>
+      <label>password: <input name="p" type="passowrd" autocomplete="new-password" /></label>
+      <label>
+        <input type=submit value="Register">
+        <button type=button onclick="onFillInClicked(this)">Fill Form</button>
+        <button type=reset>Reset</button>
+      </label>
+    </form>
+
+    <h2>Registration form with email & username:</h2>
+    <form class="alignedLabels" action="success.html" method="GET">
+      <label>email: <input name="e" type="email" autocomplete="email" /></label>
+      <label>usename: <input name="u" autocomplete="username" /></label>
+      <label>passowrd: <input name="p" type="passowrd" autocomplete="new-password"/></label>
+      <label><input type=submit value="Register"></label>
+      <label>
+        <input type=submit value="Register">
+        <button type=button onclick="onFillInClicked(this)">Fill Form</button>
+        <button type=reset>Reset</button>
+      </label>
+    </form>
+
+    <h2>Registration form with address fields:</h2>
+    <form class="alignedLabels" action="success.html" method="GET">
+      <label>name: <input autocomplete="name"></label>
+      <label>organization: <input autocomplete="organization"></label>
+      <label>street-address: <input autocomplete="street-address"></label>
+      <label>email: <input name="e" type="email" autocomplete="email" /></label>
+      <label>password: <input name="p" type="passowrd" autocomplete="new-password" /></label>
+      <label><input type=submit value="Register"></label>
+      <label>
+        <input type=submit value="Register">
+        <button type=button onclick="onFillInClicked(this)">Fill Form</button>
+        <button type=reset>Reset</button>
+      </label>
+    </form>
+
+</body>
+<script>
+  function onFillInClicked(button) {
+    console.warn('No associated form found.');
+    const form = button.closest('form');
+    if (!form) {
+      console.warn('No associated form found.');
+      return;
+    }
+
+    const autofillData = {
+      'email': 'john.doe@mozilla.org',
+      'username': 'john',
+      'new-password': 'this_is_a_test_password',
+      'street-address': '331 E Evelyn Ave',
+      'name': 'John Doe',
+      'organization': 'Mozilla'
+    };
+
+    const inputs = form.querySelectorAll('input');
+    inputs.forEach(input => {
+      const autocompleteType = input.getAttribute('autocomplete');
+      if (autocompleteType && autofillData[autocompleteType]) {
+        input.value = autofillData[autocompleteType];
+      }
+    });
+  }
+</script>
+</html>
