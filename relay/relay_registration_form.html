@@ -8,8 +8,8 @@
 </head>
 <body>
     <h2>Registration form with email:</h2>
-    <form class="alignedLabels" action="success.html" method="GET">
-      <label>email: <input name="e" type="email" autocomplete="email" /></label>
+    <form class="alignedLabels" action="success.html" method="POST">
+      <label>email: <input name="e" type="email" autocomplete="username" /></label>
       <label>password: <input name="p" type="passowrd" autocomplete="new-password" /></label>
       <label>
         <input type=submit value="Register">
@@ -19,11 +19,10 @@
     </form>
 
     <h2>Registration form with email & username:</h2>
-    <form class="alignedLabels" action="success.html" method="GET">
+    <form class="alignedLabels" action="success.html" method="POST">
       <label>email: <input name="e" type="email" autocomplete="email" /></label>
       <label>usename: <input name="u" autocomplete="username" /></label>
       <label>passowrd: <input name="p" type="passowrd" autocomplete="new-password"/></label>
-      <label><input type=submit value="Register"></label>
       <label>
         <input type=submit value="Register">
         <button type=button onclick="onFillInClicked(this)">Fill Form</button>
@@ -32,13 +31,12 @@
     </form>
 
     <h2>Registration form with address fields:</h2>
-    <form class="alignedLabels" action="success.html" method="GET">
+    <form class="alignedLabels" action="success.html" method="POST">
       <label>name: <input autocomplete="name"></label>
       <label>organization: <input autocomplete="organization"></label>
       <label>street-address: <input autocomplete="street-address"></label>
       <label>email: <input name="e" type="email" autocomplete="email" /></label>
       <label>password: <input name="p" type="passowrd" autocomplete="new-password" /></label>
-      <label><input type=submit value="Register"></label>
       <label>
         <input type=submit value="Register">
         <button type=button onclick="onFillInClicked(this)">Fill Form</button>
