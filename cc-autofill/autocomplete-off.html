@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forms with Autocomplete Off</title>
+</head>
+<body>
+    <h1>Credit Card Form</h1>
+    <form autocomplete="off">
+        <div>
+            <label for="card-name">Name on Card</label>
+            <input type="text" id="card-name" name="card-name" placeholder="Enter the name on your card" autocomplete="off" required>
+        </div>
+        <div>
+            <label for="card-number">Card Number</label>
+            <input type="text" id="card-number" name="card-number" placeholder="1234 5678 9012 3456" autocomplete="off" required>
+        </div>
+        <div>
+            <label for="card-expiry">Expiry Date</label>
+            <input type="text" id="card-expiry" name="card-expiry" placeholder="MM/YY" autocomplete="off" required>
+        </div>
+        <div>
+            <label for="card-cvv">CVV</label>
+            <input type="text" id="card-cvv" name="card-cvv" placeholder="123" autocomplete="off" required>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h1>Address Form</h1>
+    <form autocomplete="off">
+        <div>
+            <label for="address-line1">Address Line 1</label>
+            <input type="text" id="address-line1" name="address-line1" placeholder="Street address or P.O. Box" autocomplete="off" required>
+        </div>
+        <div>
+            <label for="address-line2">Address Line 2</label>
+            <input type="text" id="address-line2" name="address-line2" placeholder="Apartment, suite, unit, building, floor, etc. (optional)" autocomplete="off">
+        </div>
+        <div>
+            <label for="city">City</label>
+            <input type="text" id="city" name="city" placeholder="Enter your city" autocomplete="off" required>
+        </div>
+        <div>
+            <label for="state">State/Province</label>
+            <input type="text" id="state" name="state" placeholder="Enter your state or province" autocomplete="off" required>
+        </div>
+        <div>
+            <label for="postal-code">Postal Code</label>
+            <input type="text" id="postal-code" name="postal-code" placeholder="Enter your postal code" autocomplete="off" required>
+        </div>
+        <div>
+            <label for="country">Country</label>
+            <input type="text" id="country" name="country" placeholder="Enter your country" autocomplete="off" required>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
