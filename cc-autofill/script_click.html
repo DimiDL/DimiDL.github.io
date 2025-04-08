@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Credit Card Form</title>
+</head>
+<body>
+  <form>
+    <label>
+      Name on Card:
+      <input type="text" name="cc-name" autocomplete="cc-name" id="cc-name">
+    </label>
+    <br>
+
+    <label>
+      Card Number:
+      <input type="text" name="cc-number" autocomplete="cc-number">
+    </label>
+    <br>
+
+    <label>
+      Expiration Date:
+      <input type="text" name="cc-exp" autocomplete="cc-exp" placeholder="MM/YY">
+    </label>
+    <br>
+
+    <label>
+      Security Code:
+      <input type="text" name="cc-csc" autocomplete="cc-csc">
+    </label>
+    <br>
+  </form>
+
+  <button id="focus-btn">Focus on Name</button>
+
+  <script>
+    document.getElementById('focus-btn').addEventListener('click', function () {
+      document.getElementById('cc-name').focus();
+    });
+  </script>
+</body>
+</html>
