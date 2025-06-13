@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Login Page with Delayed Load</title>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOMContentLoaded at', performance.now().toFixed(2), 'ms');
+    });
+
+    window.addEventListener('load', () => {
+      console.log('Load event at', performance.now().toFixed(2), 'ms');
+    });
+  </script>
+</head>
+<body>
+  <h1>Login</h1>
+  <form action="/login" method="post">
+    <label for="username">Username:</label>
+    <input type="text" name="username" id="username" autocomplete="username"><br><br>
+
+    <label for="password">Password:</label>
+    <input type="password" name="password" id="password" autocomplete="current-password"><br><br>
+
+    <button type="submit">Log In</button>
+  </form>
+
+  <hr>
+
+  <iframe src="delayed.html" width="400" height="200" style="border:1px solid black;"></iframe>
+</body>
+</html>

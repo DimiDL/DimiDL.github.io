@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Delayed Iframe</title>
+  <script>
+    const start = performance.now();
+    const delay = 5000;
+    while (performance.now() - start < delay) {
+      // Busy wait for 5 seconds
+    }
+  </script>
+</head>
+<body>
+  <p>This iframe delays load by 5 seconds</p>
+</body>
+</html>
