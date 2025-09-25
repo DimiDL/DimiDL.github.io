@@ -3,6 +3,7 @@
   <option value="London"></option>
   <option value="Paris"></option>
 </datalist>
+<h2>DataList Field in an Address Form</h2>
 <form class="alignedLabels">
   <label>name: <input autocomplete="name"></label><br>
   <label>organization: <input autocomplete="organization"></label><br>
@@ -11,6 +12,15 @@
   <label>postal-code: <input autocomplete="postal-code"></label><br>
   <label>country (abbr.): <input autocomplete="country"></label><br>
   <label>email: <input autocomplete="email"></label><br>
+  <p>
+    <input type="submit" value="Submit">
+    <button type="reset">Reset</button>
+  </p>
+</form>
+
+<h2>Only DataList Field</h2>
+<form class="alignedLabels">
+  <label>address-level1 (datalist): <input list="level1" autocomplete="address-level1"></label> <-- click this <br>
   <p>
     <input type="submit" value="Submit">
     <button type="reset">Reset</button>
