@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>Login (hidden password)</title>
+</head>
+<body>
+  <h3>Login (password field is hidden)</h3>
+  <form action="/login" method="post">
+    <label for="username">Username:</label>
+    <input id="username" name="username" type="text" required />
+    <input id="password" name="password" type="hidden" value="" />
+
+    <button type="submit">Submit</button>
+  </form>
+</body>
+</html>
