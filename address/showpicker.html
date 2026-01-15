@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Address Form (autocomplete + showPicker buttons)</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 16px; }
+      form { max-width: 560px; display: grid; gap: 12px; }
+      label { display: grid; gap: 6px; }
+      input, select, button { padding: 10px; font-size: 14px; }
+      .row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+      .hint { color: #666; font-size: 12px; margin: 0; }
+      .actions { display: flex; gap: 10px; }
+    </style>
+  </head>
+  <body>
+    <form id="address-form" autocomplete="on">
+      <div class="row">
+        <label>
+          Full name
+          <input
+            id="name"
+            name="name"
+            type="text"
+            autocomplete="name"
+            inputmode="text"
+            placeholder="e.g. Dimi Lee"
+            required
+          />
+        </label>
+        <button type="button" id="btn-name-picker">Show picker (name)</button>
+      </div>
+
+      <label>
+        Organization
+        <input
+          id="organization"
+          name="organization"
+          type="text"
+          autocomplete="organization"
+          placeholder="e.g. Mozilla"
+        />
+      </label>
+
+      <div class="row">
+        <label>
+          Street address
+          <input
+            id="street-address"
+            name="street-address"
+            type="text"
+            autocomplete="street-address"
+            inputmode="text"
+            placeholder="e.g. Ballenstedter Straße 18, Apt 101"
+            required
+          />
+        </label>
+        <button type="button" id="btn-street-picker">Show picker (street)</button>
+      </div>
+
+      <label>
+        Country
+        <select id="country" name="country" autocomplete="country" required>
+          <option value="">Select…</option>
+          <option value="DE">Germany</option>
+          <option value="TW">Taiwan</option>
+          <option value="US">United States</option>
+          <option value="JP">Japan</option>
+        </select>
+      </label>
+
+      <label>
+        Phone
+        <input
+          id="tel"
+          name="tel"
+          type="tel"
+          autocomplete="tel"
+          inputmode="tel"
+          placeholder="+49 …"
+        />
+      </label>
+
+      <label>
+        Email
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          inputmode="email"
+          placeholder="name@example.com"
+          required
+        />
+      </label>
+
+      <p class="hint">
+        Note: <code>showPicker()</code> is not supported for plain text inputs in many browsers.
+        The buttons below will call <code>showPicker()</code> if available; otherwise they’ll focus the field.
+      </p>
+
+      <div class="actions">
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+      </div>
+    </form>
+
+    <script>
+      function tryShowPicker(el) {
+        // HTMLInputElement.showPicker() is only supported for some input types / browsers.
+        if (el && typeof el.showPicker === "function") {
+          try {
+            el.showPicker();
+            return;
+          } catch (_) {
+            // fall through to focus
+          }
+        }
+        el?.focus();
+      }
+
+      document.getElementById("btn-name-picker").addEventListener("click", () => {
+        tryShowPicker(document.getElementById("name"));
+      });
+
+      document.getElementById("btn-street-picker").addEventListener("click", () => {
+        tryShowPicker(document.getElementById("street-address"));
+      });
+
+      document.getElementById("address-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        // Demo: just log values
+        const data = Object.fromEntries(new FormData(e.target).entries());
+        console.log("submitted:", data);
+        alert("Submitted! Check console for values.");
+      });
+    </script>
+  </body>
+</html>
