@@ -3,137 +3,279 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Address Form (autocomplete + showPicker buttons)</title>
+    <title>Address + Credit Card Forms (autocomplete + showPicker buttons)</title>
     <style>
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 16px; }
-      form { max-width: 560px; display: grid; gap: 12px; }
+      .page { display: grid; gap: 18px; max-width: 920px; }
+      .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; }
+      .card h2 { margin: 0 0 10px; font-size: 18px; }
+      form { display: grid; gap: 12px; }
       label { display: grid; gap: 6px; }
       input, select, button { padding: 10px; font-size: 14px; }
       .row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+      .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
       .hint { color: #666; font-size: 12px; margin: 0; }
-      .actions { display: flex; gap: 10px; }
+      .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+      code { background: #f6f6f6; padding: 0 4px; border-radius: 4px; }
+      @media (max-width: 720px) { .cols2 { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
-    <form id="address-form" autocomplete="on">
-      <div class="row">
-        <label>
-          Full name
-          <input
-            id="name"
-            name="name"
-            type="text"
-            autocomplete="name"
-            inputmode="text"
-            placeholder="e.g. Dimi Lee"
-            required
-          />
-        </label>
-        <button type="button" id="btn-name-picker">Show picker (name)</button>
-      </div>
+    <div class="page">
+      <!-- Address form -->
+      <section class="card">
+        <h2>Address form</h2>
+        <form id="address-form" autocomplete="on">
+          <div class="row">
+            <label>
+              Full name
+              <input
+                id="name"
+                name="name"
+                type="text"
+                autocomplete="name"
+                placeholder="e.g. Dimi Lee"
+                required
+              />
+            </label>
+            <button type="button" data-picker-for="name">Show picker</button>
+          </div>
 
-      <label>
-        Organization
-        <input
-          id="organization"
-          name="organization"
-          type="text"
-          autocomplete="organization"
-          placeholder="e.g. Mozilla"
-        />
-      </label>
+          <div class="row">
+            <label>
+              Organization
+              <input
+                id="organization"
+                name="organization"
+                type="text"
+                autocomplete="organization"
+                placeholder="e.g. Mozilla"
+              />
+            </label>
+            <button type="button" data-picker-for="organization">Show picker</button>
+          </div>
 
-      <div class="row">
-        <label>
-          Street address
-          <input
-            id="street-address"
-            name="street-address"
-            type="text"
-            autocomplete="street-address"
-            inputmode="text"
-            placeholder="e.g. Ballenstedter Straße 18, Apt 101"
-            required
-          />
-        </label>
-        <button type="button" id="btn-street-picker">Show picker (street)</button>
-      </div>
+          <div class="row">
+            <label>
+              Street address
+              <input
+                id="street-address"
+                name="street-address"
+                type="text"
+                autocomplete="street-address"
+                placeholder="e.g. Ballenstedter Straße 18, Apt 101"
+                required
+              />
+            </label>
+            <button type="button" data-picker-for="street-address">Show picker</button>
+          </div>
 
-      <label>
-        Country
-        <select id="country" name="country" autocomplete="country" required>
-          <option value="">Select…</option>
-          <option value="DE">Germany</option>
-          <option value="TW">Taiwan</option>
-          <option value="US">United States</option>
-          <option value="JP">Japan</option>
-        </select>
-      </label>
+          <div class="row">
+            <label>
+              Country
+              <select id="country" name="country" autocomplete="country" required>
+                <option value="">Select…</option>
+                <option value="DE">Germany</option>
+                <option value="TW">Taiwan</option>
+                <option value="US">United States</option>
+                <option value="JP">Japan</option>
+              </select>
+            </label>
+            <!-- showPicker is supported for <select> in some browsers (or focus fallback) -->
+            <button type="button" data-picker-for="country">Show picker</button>
+          </div>
 
-      <label>
-        Phone
-        <input
-          id="tel"
-          name="tel"
-          type="tel"
-          autocomplete="tel"
-          inputmode="tel"
-          placeholder="+49 …"
-        />
-      </label>
+          <div class="row">
+            <label>
+              Phone
+              <input
+                id="tel"
+                name="tel"
+                type="tel"
+                autocomplete="tel"
+                inputmode="tel"
+                placeholder="+49 …"
+              />
+            </label>
+            <button type="button" data-picker-for="tel">Show picker</button>
+          </div>
 
-      <label>
-        Email
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autocomplete="email"
-          inputmode="email"
-          placeholder="name@example.com"
-          required
-        />
-      </label>
+          <div class="row">
+            <label>
+              Email
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="name@example.com"
+                required
+              />
+            </label>
+            <button type="button" data-picker-for="email">Show picker</button>
+          </div>
 
-      <p class="hint">
-        Note: <code>showPicker()</code> is not supported for plain text inputs in many browsers.
-        The buttons below will call <code>showPicker()</code> if available; otherwise they’ll focus the field.
-      </p>
+          <div class="actions">
+            <button type="submit">Submit address</button>
+            <button type="reset">Reset</button>
+          </div>
+        </form>
+      </section>
 
-      <div class="actions">
-        <button type="submit">Submit</button>
-        <button type="reset">Reset</button>
-      </div>
-    </form>
+      <!-- Credit card form -->
+      <section class="card">
+        <h2>Credit card form</h2>
+        <form id="cc-form" autocomplete="on">
+          <div class="row">
+            <label>
+              Name on card
+              <input
+                id="cc-name"
+                name="cc-name"
+                type="text"
+                autocomplete="cc-name"
+                placeholder="e.g. Dimi Lee"
+                required
+              />
+            </label>
+            <button type="button" data-picker-for="cc-name">Show picker</button>
+          </div>
+
+          <div class="row">
+            <label>
+              Card number
+              <input
+                id="cc-number"
+                name="cc-number"
+                type="text"
+                autocomplete="cc-number"
+                inputmode="numeric"
+                placeholder="1234 5678 9012 3456"
+                required
+              />
+            </label>
+            <button type="button" data-picker-for="cc-number">Show picker</button>
+          </div>
+
+          <div class="cols2">
+            <div class="row">
+              <label>
+                Expiration month
+                <input
+                  id="cc-exp-month"
+                  name="cc-exp-month"
+                  type="text"
+                  autocomplete="cc-exp-month"
+                  inputmode="numeric"
+                  placeholder="MM"
+                  required
+                />
+              </label>
+              <button type="button" data-picker-for="cc-exp-month">Show picker</button>
+            </div>
+
+            <div class="row">
+              <label>
+                Expiration year
+                <input
+                  id="cc-exp-year"
+                  name="cc-exp-year"
+                  type="text"
+                  autocomplete="cc-exp-year"
+                  inputmode="numeric"
+                  placeholder="YYYY"
+                  required
+                />
+              </label>
+              <button type="button" data-picker-for="cc-exp-year">Show picker</button>
+            </div>
+          </div>
+
+          <div class="row">
+            <label>
+              Security code (CVC)
+              <input
+                id="cc-csc"
+                name="cc-csc"
+                type="text"
+                autocomplete="cc-csc"
+                inputmode="numeric"
+                placeholder="CVC"
+                required
+              />
+            </label>
+            <button type="button" data-picker-for="cc-csc">Show picker</button>
+          </div>
+
+          <!-- Optional: billing postal code (sometimes useful for autofill testing) -->
+          <div class="row">
+            <label>
+              Billing postal code
+              <input
+                id="cc-postal-code"
+                name="cc-postal-code"
+                type="text"
+                autocomplete="cc-postal-code"
+                placeholder="e.g. 10709"
+              />
+            </label>
+            <button type="button" data-picker-for="cc-postal-code">Show picker</button>
+          </div>
+
+          <p class="hint">
+            Note: <code>showPicker()</code> is only implemented for certain controls in many browsers (e.g. date/time,
+            color, file, and sometimes <code>&lt;select&gt;</code>). For text fields we fall back to focus.
+          </p>
+
+          <div class="actions">
+            <button type="submit">Submit card</button>
+            <button type="reset">Reset</button>
+          </div>
+        </form>
+      </section>
+    </div>
 
     <script>
       function tryShowPicker(el) {
-        // HTMLInputElement.showPicker() is only supported for some input types / browsers.
+        // For inputs: showPicker exists only for some types in some browsers.
         if (el && typeof el.showPicker === "function") {
           try {
             el.showPicker();
             return;
           } catch (_) {
-            // fall through to focus
+            // fall through
           }
         }
+
+        // For <select>, some browsers don't expose showPicker but focus+click often opens it.
         el?.focus();
+        if (el && el.tagName === "SELECT") {
+          try { el.click(); } catch (_) {}
+        }
       }
 
-      document.getElementById("btn-name-picker").addEventListener("click", () => {
-        tryShowPicker(document.getElementById("name"));
-      });
-
-      document.getElementById("btn-street-picker").addEventListener("click", () => {
-        tryShowPicker(document.getElementById("street-address"));
+      // Delegate all picker buttons.
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-picker-for]");
+        if (!btn) return;
+        const id = btn.getAttribute("data-picker-for");
+        const el = document.getElementById(id);
+        tryShowPicker(el);
       });
 
       document.getElementById("address-form").addEventListener("submit", (e) => {
         e.preventDefault();
-        // Demo: just log values
         const data = Object.fromEntries(new FormData(e.target).entries());
-        console.log("submitted:", data);
-        alert("Submitted! Check console for values.");
+        console.log("address submitted:", data);
+        alert("Address submitted! Check console for values.");
+      });
+
+      document.getElementById("cc-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(e.target).entries());
+        console.log("cc submitted:", data);
+        alert("Card submitted! Check console for values.");
       });
     </script>
   </body>
