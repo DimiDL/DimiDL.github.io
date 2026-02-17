@@ -1,0 +1,68 @@
+<form id="cc-form" autocomplete="on">
+  <fieldset>
+    <legend>Credit Card</legend>
+
+    <div>
+      <label for="cc-name">Name on card</label>
+      <input
+        id="cc-name"
+        name="cc-name"
+        type="text"
+        inputmode="text"
+        autocomplete="cc-name"
+        autofocus
+        required
+      />
+    </div>
+
+    <div>
+      <label for="cc-number">Card number</label>
+      <input
+        id="cc-number"
+        name="cc-number"
+        type="text"
+        inputmode="numeric"
+        autocomplete="cc-number"
+        required
+      />
+    </div>
+
+    <div>
+      <label for="cc-exp-month">Expiry month</label>
+      <select id="cc-exp-month" name="cc-exp-month" autocomplete="cc-exp-month" required>
+        <option value="">MM</option>
+        <option value="01">01</option><option value="02">02</option><option value="03">03</option>
+        <option value="04">04</option><option value="05">05</option><option value="06">06</option>
+        <option value="07">07</option><option value="08">08</option><option value="09">09</option>
+        <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="cc-exp-year">Expiry year</label>
+      <input
+        id="cc-exp-year"
+        name="cc-exp-year"
+        type="text"
+        inputmode="numeric"
+        autocomplete="cc-exp-year"
+        placeholder="YYYY"
+        required
+      />
+    </div>
+
+    <div>
+      <label for="cc-csc">Security code (CVC)</label>
+      <input
+        id="cc-csc"
+        name="cc-csc"
+        type="password"
+        inputmode="numeric"
+        autocomplete="cc-csc"
+        required
+      />
+    </div>
+
+    <button type="submit">Pay</button>
+  </fieldset>
+</form
