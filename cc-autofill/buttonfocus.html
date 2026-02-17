@@ -1,0 +1,66 @@
+<form id="cc-form" autocomplete="on">
+  <fieldset>
+    <legend>Credit Card</legend>
+
+    <div>
+      <label for="cc-name">Name on card</label>
+      <input
+        id="cc-name"
+        name="cc-name"
+        type="text"
+        inputmode="text"
+        autocomplete="cc-name"
+        required
+      />
+    </div>
+
+    <div>
+      <label for="cc-number">Card number</label>
+      <input
+        id="cc-number"
+        name="cc-number"
+        type="text"
+        inputmode="numeric"
+        autocomplete="cc-number"
+        required
+      />
+    </div>
+
+    <div>
+      <label for="cc-exp">Expiry</label>
+      <input
+        id="cc-exp"
+        name="cc-exp"
+        type="text"
+        inputmode="numeric"
+        autocomplete="cc-exp"
+        placeholder="MM/YY"
+        required
+      />
+    </div>
+
+    <div>
+      <label for="cc-csc">Security code (CVC)</label>
+      <input
+        id="cc-csc"
+        name="cc-csc"
+        type="password"
+        inputmode="numeric"
+        autocomplete="cc-csc"
+        required
+      />
+    </div>
+
+    <button type="button" id="focus-btn">
+      Focus credit card name
+    </button>
+
+    <button type="submit">Pay</button>
+  </fieldset>
+</form>
+
+<script>
+  document.getElementById("focus-btn").addEventListener("click", () => {
+    document.getElementById("cc-name").focus();
+  });
+</script>
