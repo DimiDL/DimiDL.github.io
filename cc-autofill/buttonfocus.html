@@ -8,6 +8,7 @@
         id="cc-name"
         name="cc-name"
         type="text"
+        inputmode="text"
         autocomplete="cc-name"
         required
       />
@@ -39,7 +40,7 @@
     </div>
 
     <div>
-      <label for="cc-csc">Security code</label>
+      <label for="cc-csc">Security code (CVC)</label>
       <input
         id="cc-csc"
         name="cc-csc"
@@ -50,44 +51,16 @@
       />
     </div>
 
+    <button type="button" id="focus-btn">
+      Focus credit card name
+    </button>
+
     <button type="submit">Pay</button>
   </fieldset>
 </form>
 
-<hr>
-
-<div id="virtual-keyboard">
-  <h3>Virtual Keyboard</h3>
-  <div id="keys"></div>
-</div>
-
 <script>
-  const keysContainer = document.getElementById("keys");
-
-  for (let i = 1; i <= 9; i++) {
-    createKey(i.toString());
-  }
-
-  createKey("A");
-
-  function createKey(value) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.textContent = value;
-
-    btn.addEventListener("click", () => {
-      const active = document.activeElement;
-
-      if (
-        active &&
-        (active.tagName === "INPUT" || active.tagName === "TEXTAREA")
-      ) {
-        active.value += value;
-
-        active.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-    });
-
-    keysContainer.appendChild(btn);
-  }
+  document.getElementById("focus-btn").addEventListener("click", () => {
+    document.getElementById("cc-name").focus();
+  });
 </script>
