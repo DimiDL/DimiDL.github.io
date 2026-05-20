@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
+        form {
+            max-width: 480px;
+            margin: auto;
+            padding: 20px 24px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        h2 { margin-top: 0; }
+        label { display: block; margin-top: 12px; font-size: 0.9em; font-weight: bold; }
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <form id="profileForm" action="/submit" method="POST" autocomplete="on">
+        <h2>Profile</h2>
+
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" name="name" autocomplete="name" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" required>
+
+        <label for="bday">Birthday</label>
+        <input type="date" id="bday" name="bday" autocomplete="bday" required>
+
+        <button type="submit">Save Profile</button>
+    </form>
+</body>
+</html>
