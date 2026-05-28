@@ -4325,7 +4325,15 @@ main {
   width: 160px;
   flex-shrink: 0;
 }
-.settings-meta { font-size: 11px; color: var(--color-text-faint); }
+.settings-meta {
+  font-size: 11px;
+  color: var(--color-text-faint);
+  min-width: 0;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* ── Settings group cards ────────────────────────────────────── */
 .settings-group-card {
@@ -4701,6 +4709,7 @@ body.export-mode #sidebar,
 body.export-mode .sidebar,
 body.export-mode .console-panel,
 body.export-mode .skt-guide,
+body.export-mode [id^="skt-area-"],
 body.export-mode .testsite-iframe,
 body.export-mode .testsite-iframe-wrap,
 body.export-mode .clear-ai-menu,
@@ -4709,7 +4718,7 @@ body.export-mode .btn-menu-dropdown,
 body.export-mode textarea,
 body.export-mode select,
 body.export-mode input,
-body.export-mode button:not(.section-tab):not(.panel-nav__tab):not(.skt-node):not(.skt-sub-node) {
+body.export-mode button:not(.section-tab):not(.panel-nav__tab) {
   display: none !important;
 }
 body.export-mode .app-layout { display: block; }
