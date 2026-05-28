@@ -250,7 +250,7 @@ main {
    Color mods: btn-outlined--purple  btn-compact--green  btn-compact--blue
    Size mods:  btn--sm  btn--xs  (override default geometry)
    Toggle: btn-toggle  btn-toggle--off
-   Unchanged: btn-phase system, btn-clear-ai / btn-clear-ai-caret (split pair)
+   Unchanged: btn-phase system, btn-split-menu (split main+caret with dropdown)
    ─────────────────────────────────────────────────────────────── */
 
 .btn-primary:disabled, .btn-secondary:disabled, .btn-danger:disabled,
@@ -2367,54 +2367,89 @@ main {
 .test-chat-send:hover:not(:disabled) { background: var(--color-primary-hover); }
 .test-chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── Debug sidebar ──────────────────────────────────────────── */
-.clear-ai-menu {
+/* ── Split-menu button ───────────────────────────────────────────
+   Pattern for any header action that has a primary action AND a
+   submenu of alternates. One canonical structure used everywhere
+   (Clear AI, Investigate, Export, …):
+
+     <div class="btn-split-menu btn-split-menu--<variant>">
+       <button class="btn-split-menu__main" onclick="...">Label ↺</button>
+       <button class="btn-split-menu__caret" onclick="toggleSplitMenu(this)">▾</button>
+       <div class="btn-split-menu__dropdown">
+         <button class="btn-split-menu__item" onclick="...">Option A</button>
+         <button class="btn-split-menu__item btn-split-menu__item--danger"
+                 onclick="...">Danger option</button>
+       </div>
+     </div>
+
+   Color variants are pure CSS-variable overrides on the wrapper:
+     --warn       amber  — destructive / cautionary  (Clear AI)
+     --rootcause  purple — investigation             (Investigate)
+     --export     green  — outbound publish          (Export)
+
+   New menu buttons should reuse this system; do not invent another
+   set of classes. See CLAUDE.md → "CSS conventions".
+   ────────────────────────────────────────────────────────────── */
+.btn-split-menu {
   position: relative;
   display: inline-flex;
-  margin-left: 6px;
+  /* default neutral palette — variants below override these vars */
+  --smc-border: var(--color-border-light);
+  --smc-text: var(--color-text-muted);
+  --smc-hover-bg: var(--color-bg-raised);
+  --smc-hover-text: var(--color-text);
+}
+.btn-split-menu--warn {
+  --smc-border: #fcd34d;
+  --smc-text: #b45309;
+  --smc-hover-bg: #fffbeb;
+  --smc-hover-text: #92400e;
+}
+.btn-split-menu--rootcause {
+  --smc-border: #c4b5fd;
+  --smc-text: #7c3aed;
+  --smc-hover-bg: #f5f3ff;
+  --smc-hover-text: #6d28d9;
+}
+.btn-split-menu--export {
+  --smc-border: rgba(4, 120, 87, 0.35);
+  --smc-text: #047857;
+  --smc-hover-bg: rgba(4, 120, 87, 0.08);
+  --smc-hover-text: #036647;
 }
 
-.btn-clear-ai {
+.btn-split-menu__main,
+.btn-split-menu__caret {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #b45309;
+  color: var(--smc-text);
   background: transparent;
-  border: 1px solid #fcd34d;
-  border-radius: 7px 0 0 7px;
-  padding: 6px 10px;
+  border: 1px solid var(--smc-border);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.btn-split-menu__main {
+  padding: 6px 10px;
+  border-radius: 7px 0 0 7px;
   border-right: none;
 }
-
-.btn-clear-ai:hover {
-  background: #fffbeb;
-  color: #92400e;
-}
-
-.btn-clear-ai:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.btn-clear-ai-caret {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #b45309;
-  background: transparent;
-  border: 1px solid #fcd34d;
-  border-radius: 0 7px 7px 0;
+.btn-split-menu__caret {
   padding: 6px 8px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  border-radius: 0 7px 7px 0;
+  font-size: 0.8rem;
+}
+.btn-split-menu__main:hover:not(:disabled),
+.btn-split-menu__caret:hover:not(:disabled) {
+  background: var(--smc-hover-bg);
+  color: var(--smc-hover-text);
+}
+.btn-split-menu__main:disabled,
+.btn-split-menu__caret:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.btn-clear-ai-caret:hover {
-  background: #fffbeb;
-  color: #92400e;
-}
-
-.clear-ai-dropdown {
+.btn-split-menu__dropdown {
   display: none;
   position: absolute;
   top: calc(100% + 4px);
@@ -2422,35 +2457,37 @@ main {
   background: #fff;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 200;
-  min-width: 170px;
+  min-width: 200px;
   overflow: hidden;
 }
-
-.clear-ai-dropdown.open {
+.btn-split-menu__dropdown.open {
   display: block;
 }
 
-.clear-ai-dropdown-item {
+.btn-split-menu__item {
   display: block;
   width: 100%;
   padding: 8px 14px;
   text-align: left;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 500;
   color: #374151;
   background: transparent;
   border: none;
   cursor: pointer;
+  white-space: nowrap;
   transition: background var(--transition);
 }
-
-.clear-ai-dropdown-item:hover {
+.btn-split-menu__item:hover:not(:disabled) {
   background: var(--color-bg-raised);
 }
-
-.clear-ai-dropdown-item--danger {
+.btn-split-menu__item:disabled {
+  color: var(--color-text-faint);
+  cursor: not-allowed;
+}
+.btn-split-menu__item--danger {
   color: #b45309;
   border-top: 1px solid var(--color-border);
   font-weight: 600;
@@ -2902,6 +2939,28 @@ main {
   border-radius: 3px;
   padding: 1px 4px;
   margin-right: 4px;
+}
+
+.reply-dup-candidate-label--confirmed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.reply-dup-candidate-label--likely_duplicate {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.reply-dup-candidate-label--probable_duplicate {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.reply-dup-empty {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-bottom: 6px;
 }
 
 .reply-dup-label {
@@ -4795,7 +4854,7 @@ body.export-mode [id^="skt-area-"],
 body.export-mode .detail-summary-zh,
 body.export-mode .testsite-iframe,
 body.export-mode .testsite-iframe-wrap,
-body.export-mode .clear-ai-menu,
+body.export-mode .btn-split-menu,
 body.export-mode .btn-menu-wrap,
 body.export-mode .btn-menu-dropdown,
 body.export-mode textarea,
@@ -5371,18 +5430,19 @@ function _dispatchBugDataChanged(bugId, field) {
   document.dispatchEvent(new CustomEvent('bugdatachanged', { detail: { bugId, field } }));
 }
 
-function toggleClearAIMenu(caretBtn) {
-  const menu = caretBtn.closest('.clear-ai-menu');
-  const dropdown = menu.querySelector('.clear-ai-dropdown');
+// Shared open/close handler for every .btn-split-menu instance.
+// `caretBtn` is the ▾ button; the wrapper, dropdown, and outside-click teardown
+// are derived from it so callers stay one-liners.
+function toggleSplitMenu(caretBtn) {
+  const menu = caretBtn.closest('.btn-split-menu');
+  if (!menu) return;
+  const dropdown = menu.querySelector('.btn-split-menu__dropdown');
+  if (!dropdown) return;
   const isOpen = dropdown.classList.contains('open');
-  // Close any other open dropdowns (clear-ai siblings AND rootcause menu).
-  document.querySelectorAll('.clear-ai-dropdown.open').forEach(d => d.classList.remove('open'));
-  document.querySelectorAll('[id^="rootcause-menu-"]').forEach(d => {
-    if (d.style.display === 'block') d.style.display = 'none';
-  });
+  // Only one split-menu open at a time.
+  document.querySelectorAll('.btn-split-menu__dropdown.open').forEach(d => d.classList.remove('open'));
   if (!isOpen) {
     dropdown.classList.add('open');
-    // Close on outside click
     setTimeout(() => {
       document.addEventListener('click', function handler(e) {
         if (!menu.contains(e.target)) {
@@ -5415,9 +5475,9 @@ async function clearBugAI(bugId, triggerEl, section) {
   if (!confirm(`Clear ${label} for this bug? This cannot be undone.`)) return;
 
   // Find the main button to show feedback
-  const menu = triggerEl.closest('.clear-ai-menu');
-  const mainBtn = menu ? menu.querySelector('.btn-clear-ai') : triggerEl;
-  const dropdown = menu ? menu.querySelector('.clear-ai-dropdown') : null;
+  const menu = triggerEl.closest('.btn-split-menu');
+  const mainBtn = menu ? menu.querySelector('.btn-split-menu__main') : triggerEl;
+  const dropdown = menu ? menu.querySelector('.btn-split-menu__dropdown') : null;
   if (dropdown) dropdown.classList.remove('open');
   if (mainBtn) { mainBtn.disabled = true; mainBtn.textContent = 'Clearing…'; }
 
@@ -5638,9 +5698,9 @@ function _renderClearAIDropdown(bugId) {
   order.push('reply');
   const items = order.filter(k => clearMap[k]).map(k => clearMap[k]);
   return items.map(({ section, label }) =>
-    `<button class="clear-ai-dropdown-item" onclick="clearBugAI(${bugId}, this, '${section}')">${label}</button>`
+    `<button class="btn-split-menu__item" onclick="clearBugAI(${bugId}, this, '${section}')">${label}</button>`
   ).join('\n          ') +
-  `\n          <button class="clear-ai-dropdown-item clear-ai-dropdown-item--danger" onclick="clearBugAI(${bugId}, this, 'all')">Clear All</button>`;
+  `\n          <button class="btn-split-menu__item btn-split-menu__item--danger" onclick="clearBugAI(${bugId}, this, 'all')">Clear All</button>`;
 }
 
 // ── Double-click-to-action helpers ───────────────────────────────────────────
@@ -5651,7 +5711,7 @@ const _MAIN_ACTIONS = {
   summary:     bugId => generateTriageSummary(bugId),
   similar:     bugId => { const b = document.getElementById(`btn-find-similar-${bugId}`); if (b && !b.disabled) findAndAnalyzeSimilar(bugId, b); },
   test:        bugId => { const b = document.getElementById(`gen-test-btn-${bugId}`);       if (b && !b.disabled) generateTest(bugId, b); },
-  rootcause:   bugId => toggleRootcauseMenu(bugId),
+  rootcause:   bugId => analyzeRootCause(bugId, true),
   fix:         bugId => generateFix(bugId),
   'test-site': bugId => { const b = document.getElementById(`gen-testsite-btn-${bugId}`);  if (b && !b.disabled) generateTestSite(bugId, 'default'); },
   reply:       bugId => generateReply(bugId),
@@ -5943,10 +6003,10 @@ function renderDetail(b) {
 
     <div class="section-tabs">
       ${_renderSectionTabs(b)}
-      <div class="clear-ai-menu" style="margin-left:auto">
-        <button class="btn-clear-ai" onclick="clearBugAI(${b.id}, this, 'all')">Clear AI ↺</button>
-        <button class="btn-clear-ai-caret" onclick="toggleClearAIMenu(this)">▾</button>
-        <div class="clear-ai-dropdown">
+      <div class="btn-split-menu btn-split-menu--warn" style="margin-left:auto">
+        <button class="btn-split-menu__main" onclick="clearBugAI(${b.id}, this, 'all')">Clear AI ↺</button>
+        <button class="btn-split-menu__caret" onclick="toggleSplitMenu(this)">▾</button>
+        <div class="btn-split-menu__dropdown">
           ${_renderClearAIDropdown(b.id)}
         </div>
       </div>
@@ -6379,18 +6439,19 @@ function renderDetail(b) {
         <div class="rootcause-header">
           <div class="rootcause-header-top">
             <span class="panel-title rootcause-title">Investigation</span>
-            <div class="btn-menu-wrap">
-              <button class="btn-phase btn-phase--rootcause btn-phase--active" id="btn-rootcause-${b.id}"
-                onclick="toggleRootcauseMenu(${b.id}, event)">
-                ${b.root_cause ? 'Re-investigate ▾' : 'Investigate ▾'}
+            <div class="btn-split-menu btn-split-menu--rootcause">
+              <button class="btn-split-menu__main" id="btn-rootcause-${b.id}"
+                onclick="analyzeRootCause(${b.id}, true)">
+                ${b.root_cause ? 'Re-investigate ↺' : 'Investigate →'}
               </button>
-              <div class="btn-menu-dropdown" id="rootcause-menu-${b.id}">
-                <button class="btn-menu-item"
+              <button class="btn-split-menu__caret" onclick="toggleSplitMenu(this)">▾</button>
+              <div class="btn-split-menu__dropdown">
+                <button class="btn-split-menu__item"
                   onclick="pickRootcauseMode(${b.id}, 'with_repro', event)"
                   ${b.test_code ? '' : 'disabled title="No test case yet — generate one first"'}>
                   Run with reproduction
                 </button>
-                <button class="btn-menu-item"
+                <button class="btn-split-menu__item"
                   onclick="pickRootcauseMode(${b.id}, 'no_repro', event)">
                   Run without reproduction (guess)
                 </button>
@@ -6526,25 +6587,7 @@ function renderDetail(b) {
             <textarea id="reply-wontfix-reason-${b.id}" class="reply-wontfix-textarea" placeholder="Reason (optional)…" rows="3"></textarea>
           </div>
           <div class="reply-subopts" id="reply-subopts-duplicate-${b.id}" style="display:none">
-            ${(() => {
-              const dupCandidates = (b.similar || []).filter(s => {
-                const ai = (b.similar_ai_analysis || {})[String(s.id)];
-                const v = ai ? (typeof ai === 'string' ? ai : ai.verdict) : null;
-                return v === 'likely_duplicate' || v === 'probable_duplicate' || v === 'potential_duplicate';
-              });
-              if (!dupCandidates.length) return '';
-              return '<div class="reply-dup-suggestions">' +
-                dupCandidates.map(s => {
-                  const ai = (b.similar_ai_analysis || {})[String(s.id)];
-                  const v = ai ? (typeof ai === 'string' ? ai : ai.verdict) : '';
-                  const label = (typeof _SIMILAR_TAG_LABELS !== 'undefined' && _SIMILAR_TAG_LABELS[v]) || v;
-                  return `<button type="button" class="reply-dup-candidate" data-bug-id="${s.id}" onclick="pickDupCandidate(${b.id}, ${s.id})">`
-                    + `<span class="reply-dup-candidate-label">${label}</span>`
-                    + ` #${s.id} — ${escHtml(s.summary.slice(0, 60))}${s.summary.length > 60 ? '…' : ''}`
-                    + `</button>`;
-                }).join('') +
-              '</div>';
-            })()}
+            <div id="reply-dup-candidates-${b.id}">${renderReplyDupCandidatesHtml(b.id)}</div>
             <label class="reply-dup-label">Duplicate of bug #<input type="number" id="reply-dup-id-${b.id}" class="reply-dup-input" placeholder="bug ID"></label>
           </div>
           <div class="reply-generate-footer">
@@ -7035,6 +7078,67 @@ function pickDupCandidate(bugId, dupBugId) {
   }
 }
 
+function _storeForBug(bugId) {
+  return (typeof BUGS !== 'undefined' && BUGS[bugId])
+    || (typeof UPDATED_BUGS !== 'undefined' && UPDATED_BUGS[bugId])
+    || (typeof MY_ISSUES_DATA !== 'undefined' && MY_ISSUES_DATA[bugId])
+    || null;
+}
+
+// Builds the candidate-buttons HTML for the reply panel's DUPLICATE subopt.
+// Includes (in priority order): user-confirmed duplicates, Strong Match (likely_duplicate),
+// Possible Match (probable_duplicate). De-duplicated by bug id.
+function renderReplyDupCandidatesHtml(bugId) {
+  const b = _storeForBug(bugId);
+  if (!b) return '';
+  _initDupConfirmationState(bugId);
+  const similar = b.similar || [];
+  const ai = b.similar_ai_analysis || {};
+  const confirmedSet = MARKED_DUPS[bugId] || new Set();
+
+  const entries = [];
+  const seen = new Set();
+  const push = (s, label, verdictClass) => {
+    if (seen.has(s.id)) return;
+    seen.add(s.id);
+    entries.push({ s, label, verdictClass });
+  };
+
+  // 1) User-confirmed duplicates first (from the Duplicate panel checkboxes).
+  similar.forEach(s => { if (confirmedSet.has(s.id)) push(s, 'Confirmed', 'confirmed'); });
+  // 2) Strong Match (likely_duplicate)
+  similar.forEach(s => {
+    const v = _verdictOf(ai[String(s.id)]);
+    if (v === 'likely_duplicate') push(s, _SIMILAR_TAG_LABELS.likely_duplicate, 'likely_duplicate');
+  });
+  // 3) Possible Match (probable_duplicate)
+  similar.forEach(s => {
+    const v = _verdictOf(ai[String(s.id)]);
+    if (v === 'probable_duplicate') push(s, _SIMILAR_TAG_LABELS.probable_duplicate, 'probable_duplicate');
+  });
+
+  if (!entries.length) {
+    return '<div class="reply-dup-empty">No suggested duplicates yet — run Find Similar in the Duplicate panel, or enter a bug ID below.</div>';
+  }
+
+  const currentPick = parseInt(document.getElementById(`reply-dup-id-${bugId}`)?.value || '0');
+  return '<div class="reply-dup-suggestions">' +
+    entries.map(({ s, label, verdictClass }) => {
+      const selectedCls = (currentPick && s.id === currentPick) ? ' reply-dup-candidate--selected' : '';
+      const summary = (s.summary || '').slice(0, 60) + ((s.summary || '').length > 60 ? '…' : '');
+      return `<button type="button" class="reply-dup-candidate${selectedCls}" data-bug-id="${s.id}" onclick="pickDupCandidate(${bugId}, ${s.id})">`
+        + `<span class="reply-dup-candidate-label reply-dup-candidate-label--${verdictClass}">${escHtml(label)}</span>`
+        + ` #${s.id} — ${escHtml(summary)}`
+        + `</button>`;
+    }).join('') +
+    '</div>';
+}
+
+function refreshReplyDupCandidates(bugId) {
+  const host = document.getElementById(`reply-dup-candidates-${bugId}`);
+  if (host) host.innerHTML = renderReplyDupCandidatesHtml(bugId);
+}
+
 const _SIMILAR_TAG_LABELS = {
   likely_duplicate:    'Strong Match',
   probable_duplicate:  'Possible Match',
@@ -7173,6 +7277,7 @@ function toggleDupMark(cb) {
   }
 
   _saveDupConfirmationState(sourceId);
+  refreshReplyDupCandidates(sourceId);
 
   // Trigger workflow suggestion whenever the user checks (confirms) a duplicate
   if (cb.checked) {
@@ -7273,6 +7378,7 @@ async function findAndAnalyzeSimilar(bugId, btn) {
         const stab = document.getElementById(`stab-similar-${bugId}`);
         if (stab) stab.innerHTML = `Duplicate${shown ? ` <span class="stab-count">${shown}</span>` : ''}`;
         setConsolePanelStatus('Done', 'success');
+        refreshReplyDupCandidates(bugId);
         initSectionContent(bugId);
       }
     }, {}, [bugId, 'similar']);
@@ -9272,44 +9378,13 @@ function renderRootCauseReport(raw) {
   return sections.join('');
 }
 
-function _closeRootcauseMenu(dropdown) {
-  dropdown.style.display = 'none';
-  if (dropdown._closeHandler) {
-    document.removeEventListener('click', dropdown._closeHandler);
-    dropdown._closeHandler = null;
-  }
-}
-
-// event is optional: the trigger button passes one (for stopPropagation), but
-// the skill-tree shortcut at bugs.js _MAIN_ACTIONS.rootcause calls without one.
-function toggleRootcauseMenu(bugId, event) {
-  if (event) event.stopPropagation();
-  const dropdown = document.getElementById(`rootcause-menu-${bugId}`);
-  if (!dropdown) return;
-  if (dropdown.style.display === 'block') {
-    _closeRootcauseMenu(dropdown);
-    return;
-  }
-  // Mutually exclusive with the clear-ai dropdown (clearBugAI menu) — keep at
-  // most one floating menu open at a time.
-  document.querySelectorAll('.clear-ai-dropdown.open').forEach(d => d.classList.remove('open'));
-  dropdown.style.display = 'block';
-  setTimeout(() => {
-    const handler = e => {
-      // Clicks inside the dropdown (e.g. on menu items) must not close it
-      // before pickRootcauseMode runs.
-      if (dropdown.contains(e.target)) return;
-      _closeRootcauseMenu(dropdown);
-    };
-    dropdown._closeHandler = handler;
-    document.addEventListener('click', handler);
-  }, 0);
-}
-
 function pickRootcauseMode(bugId, mode, event) {
-  event.stopPropagation();
-  const dropdown = document.getElementById(`rootcause-menu-${bugId}`);
-  if (dropdown) _closeRootcauseMenu(dropdown);
+  if (event) event.stopPropagation();
+  // Close the split-menu dropdown, then kick off the chosen-mode run.
+  const btn = document.getElementById(`btn-rootcause-${bugId}`);
+  const menu = btn ? btn.closest('.btn-split-menu') : null;
+  const dropdown = menu ? menu.querySelector('.btn-split-menu__dropdown') : null;
+  if (dropdown) dropdown.classList.remove('open');
   analyzeRootCause(bugId, true, mode);
 }
 
@@ -9350,7 +9425,7 @@ async function analyzeRootCause(bugId, regenerate, mode) {
         const tab = document.getElementById(`stab-rootcause-${bugId}`);
         if (tab && !tab.textContent.includes('✓')) tab.textContent = 'Investigate ✓';
         setConsolePanelStatus('Done', 'success');
-        btn.textContent = 'Re-investigate ▾'; btn.disabled = false;
+        btn.textContent = 'Re-investigate ↺'; btn.disabled = false;
         initSectionContent(bugId);
       }
     }, {}, [bugId, 'rootcause']);
@@ -10249,7 +10324,7 @@ if (!window.__simplifyMarkup) {
 </script>
 
 <script>
-const BUGS = { 2041933: {"id": 2041933, "summary": "Stack overflow in txXPathOptimizer::optimize via deeply-nested XPath expression", "description": "--- Comment #0 by yodresh@gmail.com ---\nCreated attachment 9589175\nindex.html\n\nUser Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0\n\nSteps to reproduce:\n\ntxXPathOptimizer::optimize in dom/xslt/xpath/txXPathOptimizer.cpp line 75 recurses through subexpressions without a depth check; a 200K-level XPath like \"1 and 1 and 1 …\" passed to document.evaluate crashes the content process via stack-guard-page SIGSEGV.\n\nASAN crash attached with PoC\n\n\nexport ASAN_CMD='MOZCONFIG=$PWD/mozconfig-asan \\\nASAN_OPTIONS=allocator_may_return_null=1:detect_leaks=0:abort_on_error=1:print_stacktrace=1 \\\n\neval $ASAN_CMD http://localhost:8000/a52/index.html\n\n\n\nExpected results:\n\n2026-05-23 16:09:44.355 Nightly GPU Helper[80641:5028606] Failure on line 688 in function id scheduleApplicationNotification(LSNotificationCode, NSWorkspaceNotificationCenter *): noErr == _LSModifyNotification(notificationID, 1, &code, 0, NULL, NULL, NULL)\n2026-05-23 16:09:44.471 Nightly GPU Helper[80641:5028624] Connection Invalid error for service com.apple.hiservices-xpcservice.\n2026-05-23 16:09:44.471 Nightly GPU Helper[80641:5028606] Error received in message reply handler: Connection invalid\nUNSUPPORTED (log once): POSSIBLE ISSUE: unit 1 GLD_TEXTURE_INDEX_2D is unloadable and bound to sampler type (Float) - using zero texture because texture unloadable\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==80642==ERROR: AddressSanitizer: stack-overflow on address 0x00016ee63fe0 (pc 0x00012b7ba360 bp 0x00016ee64030 sp 0x00016ee64010 T0)\n==80642==WARNING: failed to spawn external symbolizer (errno: 9)\n==80642==WARNING: failed to spawn external symbolizer (errno: 9)\n==80642==WARNING: failed to spawn external symbolizer (errno: 9)\n==80642==WARNING: failed to spawn external symbolizer (errno: 9)\n==80642==WARNING: failed to spawn external symbolizer (errno: 9)\n==80642==WARNING: Failed to use and restart external symbolizer!\n    #0 0", "reporter_email": "yodresh@gmail.com", "product": "Core", "component": "XSLT", "bug_type": "defect", "status": "UNCONFIRMED", "creation_time": "2026-05-23T16:18:36Z", "version": "unspecified", "triaged_at": null, "triage_summary": "{\"description\": \"A stack overflow crash occurs in the Firefox content process when a deeply-nested XPath expression (e.g., '1 and 1 and 1 ...' repeated ~200,000 levels deep) is passed to document.evaluate. The function txXPathOptimizer::optimize in dom/xslt/xpath/txXPathOptimizer.cpp recurses through subexpressions without any depth limit, causing the call stack to exhaust available space and triggering a SIGSEGV on a stack-guard page. The crash was confirmed with an ASAN build producing a stack-overflow report. This affects any web page that can supply a sufficiently deeply-nested XPath expression to the browser's XSLT/XPath engine.\", \"reproduction\": {\"verdict\": \"Yes\", \"detail\": \"The reporter provides a PoC HTML file and ASAN crash output. Steps involve serving the file locally and loading it in a Nightly ASAN build, which is sufficient to reproduce the crash.\"}, \"platform_dependent\": {\"verdict\": \"No\", \"detail\": \"The crash is in platform-independent C++ code in the XSLT/XPath engine; the reporter tested on macOS but the issue is not OS-specific.\"}, \"regression\": {\"verdict\": \"No\", \"detail\": \"No previous working version is mentioned; this appears to be a pre-existing missing depth-check in the optimizer, not a regression.\"}, \"site_specific\": {\"verdict\": \"No\", \"detail\": \"Any page that supplies a deeply-nested XPath expression to document.evaluate can trigger this crash.\"}, \"classification\": {\"verdict\": \"Defect\", \"detail\": \"The function is missing a recursion depth guard, causing a crash on valid (if contrived) input.\"}, \"severity\": {\"verdict\": \"S2\", \"detail\": \"The crash kills the content process with no workaround for affected pages, though it requires a crafted/malicious input to trigger.\"}, \"correct_component\": {\"verdict\": \"Yes\", \"detail\": \"The bug is correctly filed under Core :: XSLT, as the crash is in dom/xslt/xpath/txXPathOptimizer.cpp.\"}, \"security\": {\"verdict\": \"No\", \"detail\": \"Mozilla staff (Comment #3) explicitly stated that stack overflows of this kind are not considered security issues; there is no evidence of memory safety exploitation or information disclosure.\"}, \"reporter_type\": \"user-reported\", \"next_step\": \"ready-to-fix\", \"next_step_notes\": \"The root cause is clearly identified (missing depth check in txXPathOptimizer::optimize). An engineer should add a recursion depth limit or iterative traversal in that function.\", \"suggested_reply\": null, \"regression_confidence\": null, \"affected_platforms\": null}", "test_code": "\"use strict\";\n\n// Regression test for bug 2041933: a deeply-nested XPath expression like\n// \"1 and 1 and 1 ...\" passed to document.evaluate caused txXPathOptimizer to\n// recurse without a depth check and crash the content process via stack\n// overflow. After the fix, the call must either succeed or throw a\n// recoverable error, but the content process must remain alive.\n\nadd_task(async function test_deep_xpath_optimizer_no_stack_overflow() {\n  await BrowserTestUtils.withNewTab(\"about:blank\", async function (browser) {\n    let spawnError = null;\n    let result = null;\n\n    try {\n      result = await SpecialPowers.spawn(browser, [], async () => {\n        const expr = Array(200000).fill(\"1\").join(\" and \");\n        try {\n          content.document.evaluate(\n            expr,\n            content.document,\n            null,\n            content.XPathResult.ANY_TYPE,\n            null\n          );\n          return { threw: false };\n        } catch (e) {\n          return { threw: true, name: e.name, message: String(e.message) };\n        }\n      });\n    } catch (e) {\n      spawnError = String(e);\n    }\n\n    Assert.equal(\n      spawnError,\n      null,\n      `[Issue Reproduced] Deeply-nested XPath must not crash the content ` +\n        `process (spawn error: ${spawnError})`\n    );\n\n    Assert.ok(\n      !browser.isCrashed,\n      \"[Issue Reproduced] Content process must remain alive after evaluating \" +\n        \"a deeply-nested XPath expression\"\n    );\n\n    if (result) {\n      info(`document.evaluate returned: ${JSON.stringify(result)}`);\n    }\n\n    // Confirm the tab is still responsive by running a trivial script in it.\n    const stillAlive = await SpecialPowers.spawn(browser, [], () => {\n      return 1 + 1;\n    });\n    Assert.equal(stillAlive, 2, \"Content process is still responsive\");\n  });\n});\n", "run_output": "Running: ./mach test browser/base/content/test/general/browser_bug2041933.js\nSkipping test file installation (up to date). Run with --force to force reinstallation.\nStreaming resource usage profile to: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/.mozbuild/logs/test/profile_log_20260528_122401.json\n 0:00.20 INFO These variables are available in the mozinfo environment and can be used to skip tests conditionally:\n 0:00.20 INFO     a11y_checks: False\n 0:00.20 INFO     android: False\n 0:00.20 INFO     apple_catalina: False\n 0:00.20 INFO     apple_silicon: True\n 0:00.20 INFO     appname: firefox\n 0:00.20 INFO     arch: aarch64\n 0:00.20 INFO     artifact: True\n 0:00.20 INFO     asan: False\n 0:00.20 INFO     automation: False\n 0:00.20 INFO     bin_suffix:\n 0:00.20 INFO     bits: 64\n 0:00.20 INFO     buildapp: browser\n 0:00.20 INFO     buildtype: opt\n 0:00.20 INFO     buildtype_guess: opt\n 0:00.20 INFO     cc_type: None\n 0:00.20 INFO     ccov: False\n 0:00.20 INFO     condprof: False\n 0:00.20 INFO     coverage: False\n 0:00.20 INFO     crashreporter: True\n 0:00.20 INFO     datareporting: True\n 0:00.20 INFO     dbus_enabled: False\n 0:00.20 INFO     debug: False\n 0:00.20 INFO     devedition: False\n 0:00.20 INFO     display: None\n 0:00.20 INFO     e10s: True\n 0:00.20 INFO     early_beta_or_earlier: True\n 0:00.20 INFO     fission: True\n 0:00.20 INFO     has_sandbox: True\n 0:00.20 INFO     headless: False\n 0:00.20 INFO     healthreport: True\n 0:00.20 INFO     http2: False\n 0:00.20 INFO     http3: False\n 0:00.20 INFO     inc_origin_init: False\n 0:00.20 INFO     is_emulator: False\n 0:00.20 INFO     is_ubuntu: False\n 0:00.20 INFO     isolated_process: False\n 0:00.20 INFO     macos_vm: False\n 0:00.20 INFO     mda_gpu: False\n 0:00.20 INFO     mingw: False\n 0:00.20 INFO     mozconfig: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/.mozconfig\n 0:00.20 INFO     msix: False\n 0:00.20 INFO     nightly_build: True\n 0:00.20 INFO     nogpu: False\n 0:00.20 INFO     normandy: True\n 0:00.20 INFO     official: False\n 0:00.20 INFO     opt: True\n 0:00.20 INFO     os: mac\n 0:00.20 INFO     os_version: 26.40\n 0:00.20 INFO     pgo: False\n 0:00.20 INFO     platform_guess: macosx64\n 0:00.20 INFO     processor: aarch64\n 0:00.20 INFO     release_or_beta: False\n 0:00.20 INFO     require_signing: False\n 0:00.20 INFO     sessionHistoryInParent: True\n 0:00.20 INFO     socketprocess_e10s: False\n 0:00.20 INFO     socketprocess_networking: False\n 0:00.20 INFO     standalone: False\n 0:00.20 INFO     stylo: True\n 0:00.20 INFO     swgl: False\n 0:00.20 INFO     sync: True\n 0:00.20 INFO     telemetry: False\n 0:00.20 INFO     tests_enabled: True\n 0:00.20 INFO     toolkit: cocoa\n 0:00.20 INFO     topobjdir: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0\n 0:00.20 INFO     topsrcdir: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933\n 0:00.20 INFO     tsan: False\n 0:00.20 INFO     ubsan: False\n 0:00.20 INFO     updater: True\n 0:00.20 INFO     verify: False\n 0:00.20 INFO     verify_fission: False\n 0:00.20 INFO     version: OS X 26.4.1\n 0:00.20 INFO     vertical_tab: False\n 0:00.20 INFO     win10_2009: False\n 0:00.20 INFO     win11_2009: False\n 0:00.20 INFO     wmfme: 0\n 0:00.20 INFO     xorigin: False\n 0:00.20 INFO Checking for ssltunnel processes...\n 0:00.23 INFO Checking for xpcshell processes...\n 0:00.25 SUITE_START: mochitest-browser - running 1 tests\n 0:00.25 INFO Running manifest: browser/base/content/test/general/browser.toml\n 0:02.92 pid:80429 Full command: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/bin/pk12util -i /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/build/pgo/certs/mochitest.client -w /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner/.crtdbpw -d /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner\npid:80429 pk12util: PKCS12 IMPORT SUCCESSFUL\n 0:02.95 INFO MochitestServer : launching ['/Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/bin/xpcshell', '-g', '/Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/Nightly.app/Contents/Resources', '-e', \"const _PROFILE_PATH = '/var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner'; const _SERVER_PORT = '8888'; const _SERVER_ADDR = '127.0.0.1'; const _TEST_PREFIX = undefined; const _DISPLAY_RESULTS = false; const _HTTPD_PATH = '/Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/bin/components'; \", '-f', '/Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/_tests/testing/mochitest/server.js']\n 0:02.95 INFO runtests.py | Server pid: 80431\n 0:02.95 INFO runtests.py | Websocket server pid: 80432\n 0:02.96 INFO runtests.py | SSL tunnel pid: 80433\n 0:03.12 INFO use http3 server: False\n 0:03.12 INFO Use build node at /Users/dimi/.mozbuild/node/bin/node\n 0:03.12 INFO mozserve | Found moz-http2 server path: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/_tests/testing/mochitest/xpcshell/moz-http2/moz-http2.js\n 0:03.12 INFO Found node at /Users/dimi/.mozbuild/node/bin/node\n 0:03.25 INFO mozserve | moz-http2 server msg: HTTP2 server listening on ports 52339,52340\n 0:03.25 INFO moz-http2 server started on ports 52339, 52340\n 0:03.25 INFO node moz-http2 [stderr] (node:80436) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.\n 0:03.25 INFO node moz-http2 [stderr] (Use `node --trace-deprecation ...` to show where the warning was created)\n 0:03.25 INFO runtests.py | Running with scheme: http\n 0:03.25 INFO runtests.py | Running with e10s: True\n 0:03.25 INFO runtests.py | Running with fission: True\n 0:03.25 INFO runtests.py | Running with cross-origin iframes: False\n 0:03.25 INFO runtests.py | Running with socketprocess_e10s: False\n 0:03.25 INFO runtests.py | Running http tests: start.\n 0:03.27 WARNING Found 'firefox' running before starting test browser!\n 0:03.27 WARNING {'cmdline': ['/Applications/Firefox Nightly.app/Contents/MacOS/firefox', '-foreground'], 'ppid': 1, 'pid': 47978, 'username': 'dimi', 'name': 'firefox'}\n 0:03.27 INFO Application command: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/Nightly.app/Contents/MacOS/firefox -marionette -remote-allow-system-access -foreground -profile /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner\n 0:03.27 INFO runtests.py | Application pid: 80438\n 0:03.27 Started process `GECKO(80438)`\n 0:03.63 GECKO(80438) [Parent 80438, IPC I/O Parent] WARNING: Failed to launch gpu subprocess @posix_spawnp (Error:2): file /builds/worker/checkouts/gecko/ipc/glue/GeckoChildProcessHost.cpp:825\n 0:03.63 GECKO(80438) [GFX1-]: GPU proc launch error posix_spawnp 0x2\n 0:03.63 GECKO(80438) 1779963844930\tMarionette\tINFO\tMarionette enabled\n 0:03.78 GECKO(80438) 1779963845078\tMarionette\tTRACE\tReceived observer notification final-ui-startup\n 0:03.84 GECKO(80438) 1779963845138\tMarionette\tINFO\tListening on port 2828\n 0:03.84 GECKO(80438) 1779963845138\tMarionette\tDEBUG\tMarionette is listening\n 0:03.86 GECKO(80438) 1779963845158\tMarionette\tDEBUG\tAccepted connection 0 from 127.0.0.1:52346\n 0:03.87 GECKO(80438) 1779963845168\tMarionette\tDEBUG\tClosed connection 0\n 0:03.87 GECKO(80438) 1779963845168\tMarionette\tDEBUG\tAccepted connection 1 from 127.0.0.1:52347\n 0:03.91 GECKO(80438) 1779963845210\tMarionette\tDEBUG\t1 -> [0,1,\"WebDriver:NewSession\",{\"strictFileInteractability\":true}]\n 0:03.92 GECKO(80438) 1779963845214\tMarionette\tDEBUG\tWaiting for initial application window\n 0:03.98 GECKO(80438) [Parent 80438: Main Thread]: I/SlowChromeEvent Please do not use mouseenter/leave events in chrome. They are slower than mouseover/out! chrome://browser/content/tabbrowser/tabs.js:53:12\n 0:04.03 GECKO(80438) [Parent 80438, IPC I/O Parent] WARNING: Failed to launch gpu subprocess @posix_spawnp (Error:2): file /builds/worker/checkouts/gecko/ipc/glue/GeckoChildProcessHost.cpp:825\n 0:04.03 GECKO(80438) [GFX1-]: GPU proc launch error posix_spawnp 0x2\n 0:04.03 GECKO(80438) [Parent 80438, IPC I/O Parent] WARNING: Failed to launch gpu subprocess @posix_spawnp (Error:2): file /builds/worker/checkouts/gecko/ipc/glue/GeckoChildProcessHost.cpp:825\n 0:04.03 GECKO(80438) [GFX1-]: GPU proc launch error posix_spawnp 0x2\n 0:04.03 GECKO(80438) [GFX1-]: Fallback WR to SW-WR\n 0:04.03 GECKO(80438) [GFX1-]: Failed to launch GPU process after 3 attempts\n 0:04.44 GECKO(80438) console.error: services.settings:\n 0:04.44 GECKO(80438)   Message: EmptyDatabaseError: \"main/nimbus-desktop-experiments\" has not been synced yet\n 0:04.44 GECKO(80438)   Stack:\n 0:04.44 GECKO(80438)     EmptyDatabaseError@resource://services-settings/Database.sys.mjs:19:5\n 0:04.44 GECKO(80438) list@resource://services-settings/Database.sys.mjs:96:13\n 0:04.44 GECKO(80438) async*get@resource://services-settings/RemoteSettingsClient.sys.mjs:573:28\n 0:04.44 GECKO(80438) async*getRecipesFromCollection@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:669:30\n 0:04.44 GECKO(80438) getRecipesFromAllCollections@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:563:39\n 0:04.44 GECKO(80438) #updateImpl@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:450:33\n 0:04.44 GECKO(80438) async*updateRecipes/<@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:392:53\n 0:04.44 GECKO(80438) LockGrantedCallback*withUpdateLock@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:349:24\n 0:04.44 GECKO(80438) updateRecipes@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:392:16\n 0:04.44 GECKO(80438) enable@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:318:16\n 0:04.44 GECKO(80438) init@resource://nimbus/ExperimentAPI.sys.mjs:303:28\n 0:04.44 GECKO(80438) async*finishInit@resource://normandy/Normandy.sys.mjs:109:30\n 0:04.44 GECKO(80438) async*init@resource://normandy/Normandy.sys.mjs:80:16\n 0:04.44 GECKO(80438) async*fn@resource://gre/modules/BrowserUtils.sys.mjs:83:33\n 0:04.44 GECKO(80438) callSingleListener@resource://gre/modules/BrowserUtils.sys.mjs:728:15\n 0:04.44 GECKO(80438) callModulesFromCategory@resource://gre/modules/BrowserUtils.sys.mjs:769:23\n 0:04.44 GECKO(80438) BG__beforeUIStartup@resource:///modules/BrowserGlue.sys.mjs:415:23\n 0:04.44 GECKO(80438) BG_observe@resource:///modules/BrowserGlue.sys.mjs:195:14\n 0:04.63 GECKO(80438) 1779963845927\tMarionette\tTRACE\tReceived observer notification browser-idle-startup-tasks-finished\n 0:04.73 GECKO(80438) 1779963846027\tRemoteAgent\tTRACE\t[11] ProgressListener Start: expectNavigation=false resolveWhenStarted=false unloadTimeout=5000 waitForExplicitStart=false\n 0:04.73 GECKO(80438) 1779963846027\tRemoteAgent\tTRACE\t[11] ProgressListener Setting unload timer (5000ms)\n 0:04.73 GECKO(80438) 1779963846029\tRemoteAgent\tTRACE\t[11] Wait for initial navigation: isUncommittedInitial=false, isLoadingDocument=false\n 0:04.73 GECKO(80438) 1779963846029\tRemoteAgent\tTRACE\t[11] Document already finished loading: about:blank\n 0:04.73 GECKO(80438) 1779963846029\tRemoteAgent\tTRACE\t[11] ProgressListener Stop: has error=false url=about:blank\n 0:04.74 GECKO(80438) 1779963846035\tMarionette\tDEBUG\t1 <- [1,1,null,{\"sessionId\":\"2984cd61-9de6-47fd-899c-5b9411a94c66\",\"capabilities\":{\"acceptInsecureCerts\":false,\"browserName\":\"firefox\",\"browserVersion\":\"153.0a1\",\"platformName\":\"mac\",\"setWindowRect\":true,\"unhandledPromptBehavior\":\"dismiss and notify\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0\",\"moz:buildID\":\"20260527085321\",\"moz:headless\":false,\"moz:platformVersion\":\"25.4.0\",\"moz:processID\":80438,\"moz:profile\":\"/var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner\",\"moz:shutdownTimeout\":60000,\"pageLoadStrategy\":\"normal\",\"timeouts\":{\"implicit\":0,\"pageLoad\":300000,\"script\":30000},\"strictFileInteractability\":true,\"moz:accessibilityChecks\":false,\"moz:webdriverClick\":true,\"moz:windowless\":false,\"proxy\":{}}}]\n 0:04.75 GECKO(80438) 1779963846043\tMarionette\tDEBUG\t1 -> [0,2,\"Addon:Install\",{\"temporary\":false,\"path\":\"/var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp_fdollwt.zip\"}]\n 0:04.79 GECKO(80438) 1779963846081\tMarionette\tDEBUG\t1 <- [1,2,null,{\"value\":\"special-powers@mozilla.org\"}]\n 0:04.81 GECKO(80438) 1779963846102\tMarionette\tDEBUG\t1 -> [0,3,\"Addon:Install\",{\"temporary\":false,\"path\":\"/var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmpe58he0cu.zip\"}]\n 0:04.81 GECKO(80438) 1779963846108\tMarionette\tDEBUG\t1 <- [1,3,null,{\"value\":\"mochikit@mozilla.org\"}]\n 0:04.81 GECKO(80438) 1779963846109\tMarionette\tDEBUG\t1 -> [0,4,\"Marionette:GetContext\",{}]\n 0:04.81 GECKO(80438) 1779963846109\tMarionette\tDEBUG\t1 <- [1,4,null,{\"value\":\"content\"}]\n 0:04.81 GECKO(80438) 1779963846109\tMarionette\tDEBUG\t1 -> [0,5,\"Marionette:SetContext\",{\"value\":\"chrome\"}]\n 0:04.81 GECKO(80438) 1779963846109\tMarionette\tDEBUG\t1 <- [1,5,null,{\"value\":null}]\n 0:04.82 GECKO(80438) 1779963846113\tMarionette\tDEBUG\t1 -> [0,6,\"WebDriver:ExecuteScript\",{\"script\":\"/* This Source Code Form is subject to the terms of the Mozilla Public\\n * License, v. 2.0. If a copy of the MPL was not distr ... \\n// the flavor and url to load.\\nlet ev = new CustomEvent(\\\"mochitest-load\\\", { detail: [flavor, url] });\\nwin.dispatchEvent(ev);\",\"args\":[{\"flavor\":\"browser-chrome\",\"testUrl\":\"about:blank\"}],\"newSandbox\":true,\"sandbox\":\"default\",\"line\":2276,\"filename\":\"_tests/testing/mochitest/runtests.py\"}]\n 0:04.82 GECKO(80438) 1779963846116\tRemoteAgent\tTRACE\tWebDriverProcessData actor created for PID 80438\n 0:04.82 GECKO(80438) 1779963846116\tMarionette\tTRACE\t[2] MarionetteCommands actor created for window id 4\n 0:04.83 GECKO(80438) 1779963846128\tMarionette\tDEBUG\t1 <- [1,6,null,{\"value\":null}]\n 0:04.83 GECKO(80438) 1779963846129\tMarionette\tDEBUG\t1 -> [0,7,\"Marionette:SetContext\",{\"value\":\"content\"}]\n 0:04.83 GECKO(80438) 1779963846129\tMarionette\tDEBUG\t1 <- [1,7,null,{\"value\":null}]\n 0:04.85 GECKO(80438) 1779963846144\tMarionette\tDEBUG\t1 -> [0,8,\"WebDriver:DeleteSession\",{}]\n 0:04.85 GECKO(80438) 1779963846144\tMarionette\tTRACE\t[2] MarionetteCommands actor destroyed for window id 4\n 0:04.85 GECKO(80438) 1779963846145\tMarionette\tDEBUG\t1 <- [1,8,null,{\"value\":null}]\n 0:04.85 INFO runtests.py | Waiting for browser...\n 0:04.85 GECKO(80438) 1779963846146\tMarionette\tDEBUG\tClosed connection 1\n 0:04.91 INFO *** Start BrowserChrome Test Results ***\n 0:04.91 INFO checking for open sidebars\n 0:04.91 INFO checking window state\n 0:05.01 TEST_START: browser/base/content/test/general/browser_bug2041933.js\n 0:05.01 INFO Entering test test_deep_xpath_optimizer_no_stack_overflow\n 0:05.10 GECKO(80438) console.error:\n 0:05.10 GECKO(80438)   remote browser crashed while on\n 0:05.11 GECKO(80438)   about:blank\n 0:05.14 FAIL test_deep_xpath_optimizer_no_stack_overflow - [Issue Reproduced] Deeply-nested XPath must not crash the content process (spawn error: AbortError: Actor 'SpecialPowers' destroyed before query 'Spawn' was resolved) - \"AbortError: Actor 'SpecialPowers' destroyed before query 'Spawn' was resolved\" == null\nchrome://mochitests/content/browser/browser/base/content/test/general/browser_bug2041933.js:test_deep_xpath_optimizer_no_stack_overflow/<:34\nresource://testing-common/BrowserTestUtils.sys.mjs:withNewTab:132\nchrome://mochitests/content/browser/browser/base/content/test/general/browser_bug2041933.js:test_deep_xpath_optimizer_no_stack_overflow:10\nchrome://mochikit/content/browser-test.js:handleTask:1377\nchrome://mochikit/content/browser-test.js:_runTaskBasedTest:1467\nchrome://mochikit/content/browser-test.js:Tester_execTest:1619\nchrome://mochikit/content/browser-test.js:nextTest/<:1357\nchrome://mochikit/content/tests/SimpleTest/SimpleTest.js:SimpleTest.waitForFocus/<:1060\n 0:05.14 PASS test_deep_xpath_optimizer_no_stack_overflow - [Issue Reproduced] Content process must remain alive after evaluating a deeply-nested XPath expression - true == true\n 0:05.14 GECKO(80438) [Parent 80438, IPC I/O Parent] WARNING: process 80449 exited with status 1: file checkouts/gecko/ipc/chromium/src/chrome/common/process_watcher_posix_sigchld.cc:155\n 0:05.14 PASS test_deep_xpath_optimizer_no_stack_overflow - Content process is still responsive - 2 == 2\n 0:05.15 INFO Leaving test test_deep_xpath_optimizer_no_stack_overflow\n 0:05.37 GECKO(80438) MEMORY STAT vsizeMaxContiguous not supported in this build configuration.\n 0:05.37 GECKO(80438) MEMORY STAT | vsize 444657MB | residentFast 484MB | heapAllocated 223MB\n 0:05.37 INFO checking for open sidebars\n 0:05.37 INFO checking window state\n 0:05.37 TEST_END: Test FAIL, expected PASS. Subtests passed 2/3. Unexpected 1\n 0:05.38 GECKO(80438) Completed ShutdownLeaks collections in process 80438\n 0:05.38 INFO TEST-START | Shutdown\n 0:05.38 INFO Browser Chrome Test Summary\n 0:05.38 INFO Passed:  2\n 0:05.38 INFO Failed:  1\n 0:05.38 INFO Todo:    0\n 0:05.38 INFO Mode:    e10s\n 0:05.38 INFO *** End BrowserChrome Test Results ***\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 Main app process: exit 0\n 0:05.39 INFO runtests.py | Application ran for: 0:00:02.124278\n 0:05.39 INFO zombiecheck | Reading PID log: /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmpc88glmknpidlog\n 0:05.39 INFO ==> process 80438 launched child process 80443\n 0:05.39 INFO ==> process 80438 launched child process 80445\n 0:05.39 INFO ==> process 80438 launched child process 80448\n 0:05.39 INFO ==> process 80438 launched child process 80449\n 0:05.39 INFO ==> process 80438 launched child process 80452\n 0:05.39 INFO ==> process 80438 launched child process 80453\n 0:05.39 INFO ==> process 80438 launched child process 80454\n 0:05.39 INFO ==> process 80438 launched child process 80455\n 0:05.39 INFO ==> process 80438 launched child process 80456\n 0:05.39 INFO ==> process 80438 launched child process 80457\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80448\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80449\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80452\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80453\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80454\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80455\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80456\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80457\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80443\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80445\n 0:05.39 mozcrash INFO Copy/paste: /Users/dimi/.mozbuild/minidump-stackwalk/minidump-stackwalk --cyborg=/var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/EDFA9901-761D-4A83-959B-93ACA14E49CB.json --brief /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner/minidumps/EDFA9901-761D-4A83-959B-93ACA14E49CB.dmp /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/crashreporter-symbols\n 0:05.41 CRASH: pid:None. Process type: unknown. Test:browser/base/content/test/general/browser.toml. Minidump analysed:False. Signature:[[Unknown]]\nCrash dump filename: /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner/minidumps/EDFA9901-761D-4A83-959B-93ACA14E49CB.dmp\nstderr from minidump-stackwalk:\n\u001b[31mERROR\u001b[0m MissingThreadList - Error processing dump: The thread list stream was not found\n 0:05.41 INFO runtests.py | Running http tests: end. status: 0\n 0:05.41 INFO Stopping web server\n 0:05.41 INFO Server shut down.\n 0:05.41 INFO Web server killed.\n 0:05.41 INFO Stopping web socket server\n 0:05.41 INFO Stopping ssltunnel\n 0:05.41 WARNING leakcheck | refcount logging is off, so leaks can't be detected!\n 0:05.42 INFO Buffered messages finished\nTEST-INFO | checking window state\nBrowser Chrome Test Summary\n\tPassed: 2\n\tFailed: 1\n\tTodo: 0\n\tRetried: 0\n\tMode: e10s\n*** End BrowserChrome Test Results ***\n 0:05.42 INFO Buffered messages finished\n 0:05.42 SUITE_END\n 0:05.42\nOverall Summary\n===============\nmochitest-browser\n~~~~~~~~~~~~~~~~~\nRan 4 checks (3 subtests, 1 tests)\nExpected results: 2\nUnexpected results: 2\n  test: 1 (1 fail)\n  subtest: 1 (1 fail)\nError Summary\n-------------\nbrowser/base/content/test/general/browser_bug2041933.js\n  FAIL test_deep_xpath_optimizer_no_stack_overflow - [Issue Reproduced] Deeply-nested XPath must not crash the content process (spawn error: AbortError: Actor 'SpecialPowers' destroyed before query 'Spawn' was resolved) - \"AbortError: Actor 'SpecialPowers' destroyed before query 'Spawn' was resolved\" == null\nchrome://mochitests/content/browser/browser/base/content/test/general/browser_bug2041933.js:test_deep_xpath_optimizer_no_stack_overflow/<:34\nresource://testing-common/BrowserTestUtils.sys.mjs:withNewTab:132\nchrome://mochitests/content/browser/browser/base/content/test/general/browser_bug2041933.js:test_deep_xpath_optimizer_no_stack_overflow:10\nchrome://mochikit/content/browser-test.js:handleTask:1377\nchrome://mochikit/content/browser-test.js:_runTaskBasedTest:1467\nchrome://mochikit/content/browser-test.js:Tester_execTest:1619\nchrome://mochikit/content/browser-test.js:nextTest/<:1357\nchrome://mochikit/content/tests/SimpleTest/SimpleTest.js:SimpleTest.waitForFocus/<:1060\n  FAIL browser/base/content/test/general/browser_bug2041933.js - finished in 362ms\n✗ Tests failed (exit 1)", "test_site_source": null, "root_cause": "{\"executive_summary\": \"Calling `document.evaluate()` with a deeply nested XPath expression (e.g., 200,000 `\\\"1\\\"` literals joined by `\\\" and \\\"`) crashes the content process with a stack-guard SIGSEGV. The XPath parser is iterative and survives, but it produces a left-associative binary AST as deep as the operator count. The optimizer (`txXPathOptimizer::optimize`) and several `Expr` virtual methods it invokes then descend this AST via unbounded direct C++ recursion, exhausting the thread stack before completing.\", \"architecture_overview\": \"The XPath path exercised by the test lives in `dom/xslt/xpath/`. Web IDL `Document.evaluate` calls `txExprParser::createExprInternal` (`dom/xslt/xpath/txExprParser.cpp:143-177`), which first parses via `txExprParser::createExpr` (`dom/xslt/xpath/txExprParser.cpp:258-330`) — an explicit operator-precedence loop using two `txStack`s (`exprs`, `ops`) that does not consume C++ stack proportional to operator chain length. After parsing, `createExprInternal` constructs a `txXPathOptimizer` and calls `optimizer.optimize(expr.get(), &newExpr)` (`dom/xslt/xpath/txExprParser.cpp:170-172`).\\n\\n`txXPathOptimizer::optimize` is defined at `dom/xslt/xpath/txXPathOptimizer.cpp:48-100` and walks the AST by calling itself on each child returned by `aInExpr->getSubExprAt(i)`. The AST node for `X and Y` is `BooleanExpr` (`dom/xslt/xpath/txExpr.h:598-611`), implemented with macro `TX_IMPL_EXPR_STUBS_2(BooleanExpr, BOOLEAN_RESULT, leftExpr, rightExpr)` at `dom/xslt/xpath/txBooleanExpr.cpp:50`, which exposes `leftExpr` and `rightExpr` via `getSubExprAt`/`setSubExprAt` (`dom/xslt/xpath/txExpr.h:179-189`). `BooleanExpr` also defines recursive virtuals: `BooleanExpr::evaluate` (`dom/xslt/xpath/txBooleanExpr.cpp:20-48`) and `BooleanExpr::isSensitiveTo` (`dom/xslt/xpath/txBooleanExpr.cpp:52-55`).\\n\\nA 200,000-literal `and`-chain produces a fully left-associative AST: root is `BooleanExpr(AND, deep-left-subtree, txLiteralExpr(1))`, with the left subtree being a `BooleanExpr` of depth N−1. Number literals are parsed as `txLiteralExpr` (`dom/xslt/xpath/txExprParser.cpp:371-374`), whose `isSensitiveTo` returns `false` unconditionally (`dom/xslt/xpath/txLiteralExpr.cpp:34`), so leaves never short-circuit the recursion. Other binary `Expr` subclasses (`txNumberExpr`, `RelationalExpr`, `UnionExpr`, `PathExpr`, `FilterExpr`) share the same two-child `TX_IMPL_EXPR_STUBS_2` macro and are equally susceptible. The analogous `txPatternOptimizer::optimize` at `dom/xslt/xslt/txPatternOptimizer.cpp:9` has the same structure.\", \"code_level_analysis\": \"The crash chain starting from `createExprInternal`:\\n\\n1. `txExprParser::createExprInternal` (`dom/xslt/xpath/txExprParser.cpp:170-172`) hands a 200,000-node-deep heap AST to `optimizer.optimize(expr.get(), &newExpr)`.\\n\\n2. `txXPathOptimizer::optimize` (`dom/xslt/xpath/txXPathOptimizer.cpp:48-82`) runs on the root `BooleanExpr` and enters the early-evaluation block at lines 53-68:\\n   `if (exprType != Expr::LITERAL_EXPR && !aInExpr->isSensitiveTo(Expr::ANY_CONTEXT)) {`\\n\\n3. `aInExpr->isSensitiveTo(Expr::ANY_CONTEXT)` dispatches to `BooleanExpr::isSensitiveTo` (`dom/xslt/xpath/txBooleanExpr.cpp:52-55`):\\n   `return leftExpr->isSensitiveTo(aContext) || rightExpr->isSensitiveTo(aContext);`\\n   Since the right child is always a literal (returns `false`) and the left child is another `BooleanExpr`, this is a tail-shaped recursion on `leftExpr` descending all 200,000 levels with no iterative form and no recursion limit. This alone is sufficient to exhaust the stack, especially under ASan where instrumented frames are several times larger.\\n\\n4. If `isSensitiveTo` returned safely, the optimizer would call `aInExpr->evaluate(&context, getter_AddRefs(exprRes))` (`dom/xslt/xpath/txXPathOptimizer.cpp:62`). `BooleanExpr::evaluate` (`dom/xslt/xpath/txBooleanExpr.cpp:20-48`) calls `leftExpr->evaluateToBool(aContext, lval)` at line 25, recursing into the left subtree. Since every leaf is the literal `1` (truthy), the `AND` short-circuit at line 34 never fires, and the recursion goes the full depth again.\\n\\n5. If both of the above succeeded, the sub-expression walk at `dom/xslt/xpath/txXPathOptimizer.cpp:70-82` would recursively call `optimize` on every child, again unbounded:\\n   `while ((subExpr = aInExpr->getSubExprAt(i))) { optimize(subExpr, &newExpr); ... }`\\n\\nThere are therefore three independent unbounded recursions in the same descent path: `optimize` itself, `BooleanExpr::isSensitiveTo`, and `BooleanExpr::evaluate`. On a 200,000-deep input, whichever runs first overflows the stack. Based on the order of operations in `optimize`, the crash on this specific input most likely occurs inside `BooleanExpr::isSensitiveTo` (called from `optimize` line 55) or, on a shallower input that passes that check, inside `BooleanExpr::evaluate` (called from `optimize` line 62).\", \"root_cause\": \"The root cause is that `txXPathOptimizer::optimize` (`dom/xslt/xpath/txXPathOptimizer.cpp:48-100`) and the `Expr` virtual methods it invokes — specifically `BooleanExpr::isSensitiveTo` (`dom/xslt/xpath/txBooleanExpr.cpp:52-55`) and `BooleanExpr::evaluate` (`dom/xslt/xpath/txBooleanExpr.cpp:20-48`) — all descend the XPath AST by direct C++ recursion with no depth bound, while the XPath parser (`txExprParser::createExpr`, `dom/xslt/xpath/txExprParser.cpp:258-330`) is iterative and freely constructs ASTs whose depth is proportional to the source-text operator count, allowing a 200,000-operator `and`-chain to produce a 200,000-deep tree that exhausts the thread stack one C++ frame per node.\"}", "reply_text": null, "workflow_suggestion": {"step": "verify", "reason": "Testcase generated — run it to verify the bug is reproduced."}, "fix_code": null, "fix_option_used": null, "patch_run_output": null, "test_commit_sha": "004d5467f4a2a390d1c63030a5a9ff822a912d4e", "fix_commit_sha": null, "reproduce_script": null, "reproduce_result": null, "regression_range": null, "reproduce_strategy": {"analysis": "This bug is about a stack overflow crash in Firefox's XSLT/XPath engine. The txXPathOptimizer::optimize function recurses through subexpressions without a depth limit, so a deeply-nested XPath expression (like '1 and 1 and 1...' repeated ~200,000 times) passed to document.evaluate causes a stack overflow and crashes the content process.", "plan_steps": [{"text": "Navigate to about:blank"}, {"text": "Open the browser console (F12 or Ctrl+Shift+K)"}, {"text": "Paste and execute the following JavaScript in the console: var expr = Array(200000).fill('1').join(' and '); document.evaluate(expr, document, null, XPathResult.ANY_TYPE, null);"}, {"expected_result": "Firefox content process crashes or the browser tab crashes/hangs due to stack overflow triggered by the deeply-nested XPath expression evaluation.", "text": "Take an OS screenshot"}], "prerequisites": []}, "export_meta": "{\"url\": \"https://dimidl.github.io/auto_triage/2041933.html\", \"branch\": \"master\", \"path\": \"auto_triage/2041933.html\", \"commit\": \"100cc56ca82130e1bf651d988776e86dba7bfd22\", \"pushed_at\": \"2026-05-28T11:05:33+00:00\"}", "dismissed": 0, "no_duplicate_confirmed": false, "classification": "bug", "is_regression": false, "regression_confidence": null, "platform_scope": "all-platforms", "affected_platforms": [], "component_correct": true, "component_notes": "The bug is correctly filed under Core :: XSLT, as the crash is in dom/xslt/xpath/txXPathOptimizer.cpp.", "suggested_severity": "S2", "severity_rationale": "The crash kills the content process with no workaround for affected pages, though it requires a crafted/malicious input to trigger.", "next_step": "ready-to-fix", "next_step_notes": "The root cause is clearly identified (missing depth check in txXPathOptimizer::optimize). An engineer should add a recursion depth limit or iterative traversal in that function.", "suggested_reply": null, "reporter_type": "user-reported", "similar": [], "similar_ai_analysis": {}, "confirmed_duplicate_ids": [], "test_site_variants": []} };
+const BUGS = { 2041933: {"id": 2041933, "summary": "Stack overflow in txXPathOptimizer::optimize via deeply-nested XPath expression", "description": "--- Comment #0 by yodresh@gmail.com ---\nCreated attachment 9589175\nindex.html\n\nUser Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0\n\nSteps to reproduce:\n\ntxXPathOptimizer::optimize in dom/xslt/xpath/txXPathOptimizer.cpp line 75 recurses through subexpressions without a depth check; a 200K-level XPath like \"1 and 1 and 1 …\" passed to document.evaluate crashes the content process via stack-guard-page SIGSEGV.\n\nASAN crash attached with PoC\n\n\nexport ASAN_CMD='MOZCONFIG=$PWD/mozconfig-asan \\\nASAN_OPTIONS=allocator_may_return_null=1:detect_leaks=0:abort_on_error=1:print_stacktrace=1 \\\n\neval $ASAN_CMD http://localhost:8000/a52/index.html\n\n\n\nExpected results:\n\n2026-05-23 16:09:44.355 Nightly GPU Helper[80641:5028606] Failure on line 688 in function id scheduleApplicationNotification(LSNotificationCode, NSWorkspaceNotificationCenter *): noErr == _LSModifyNotification(notificationID, 1, &code, 0, NULL, NULL, NULL)\n2026-05-23 16:09:44.471 Nightly GPU Helper[80641:5028624] Connection Invalid error for service com.apple.hiservices-xpcservice.\n2026-05-23 16:09:44.471 Nightly GPU Helper[80641:5028606] Error received in message reply handler: Connection invalid\nUNSUPPORTED (log once): POSSIBLE ISSUE: unit 1 GLD_TEXTURE_INDEX_2D is unloadable and bound to sampler type (Float) - using zero texture because texture unloadable\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==80642==ERROR: AddressSanitizer: stack-overflow on address 0x00016ee63fe0 (pc 0x00012b7ba360 bp 0x00016ee64030 sp 0x00016ee64010 T0)\n==80642==WARNING: failed to spawn external symbolizer (errno: 9)\n==80642==WARNING: failed to spawn external symbolizer (errno: 9)\n==80642==WARNING: failed to spawn external symbolizer (errno: 9)\n==80642==WARNING: failed to spawn external symbolizer (errno: 9)\n==80642==WARNING: failed to spawn external symbolizer (errno: 9)\n==80642==WARNING: Failed to use and restart external symbolizer!\n    #0 0", "reporter_email": "yodresh@gmail.com", "product": "Core", "component": "XSLT", "bug_type": "defect", "status": "UNCONFIRMED", "creation_time": "2026-05-23T16:18:36Z", "version": "unspecified", "triaged_at": null, "triage_summary": "{\"description\": \"A stack overflow crash occurs in the Firefox content process when a deeply-nested XPath expression (e.g., '1 and 1 and 1 ...' repeated ~200,000 levels deep) is passed to document.evaluate. The function txXPathOptimizer::optimize in dom/xslt/xpath/txXPathOptimizer.cpp recurses through subexpressions without any depth limit, causing the call stack to exhaust available space and triggering a SIGSEGV on a stack-guard page. The crash was confirmed with an ASAN build producing a stack-overflow report. This affects any web page that can supply a sufficiently deeply-nested XPath expression to the browser's XSLT/XPath engine.\", \"reproduction\": {\"verdict\": \"Yes\", \"detail\": \"The reporter provides a PoC HTML file and ASAN crash output. Steps involve serving the file locally and loading it in a Nightly ASAN build, which is sufficient to reproduce the crash.\"}, \"platform_dependent\": {\"verdict\": \"No\", \"detail\": \"The crash is in platform-independent C++ code in the XSLT/XPath engine; the reporter tested on macOS but the issue is not OS-specific.\"}, \"regression\": {\"verdict\": \"No\", \"detail\": \"No previous working version is mentioned; this appears to be a pre-existing missing depth-check in the optimizer, not a regression.\"}, \"site_specific\": {\"verdict\": \"No\", \"detail\": \"Any page that supplies a deeply-nested XPath expression to document.evaluate can trigger this crash.\"}, \"classification\": {\"verdict\": \"Defect\", \"detail\": \"The function is missing a recursion depth guard, causing a crash on valid (if contrived) input.\"}, \"severity\": {\"verdict\": \"S2\", \"detail\": \"The crash kills the content process with no workaround for affected pages, though it requires a crafted/malicious input to trigger.\"}, \"correct_component\": {\"verdict\": \"Yes\", \"detail\": \"The bug is correctly filed under Core :: XSLT, as the crash is in dom/xslt/xpath/txXPathOptimizer.cpp.\"}, \"security\": {\"verdict\": \"No\", \"detail\": \"Mozilla staff (Comment #3) explicitly stated that stack overflows of this kind are not considered security issues; there is no evidence of memory safety exploitation or information disclosure.\"}, \"reporter_type\": \"user-reported\", \"next_step\": \"ready-to-fix\", \"next_step_notes\": \"The root cause is clearly identified (missing depth check in txXPathOptimizer::optimize). An engineer should add a recursion depth limit or iterative traversal in that function.\", \"suggested_reply\": null, \"regression_confidence\": null, \"affected_platforms\": null}", "test_code": "\"use strict\";\n\n// Regression test for bug 2041933: a deeply-nested XPath expression like\n// \"1 and 1 and 1 ...\" passed to document.evaluate caused txXPathOptimizer to\n// recurse without a depth check and crash the content process via stack\n// overflow. After the fix, the call must either succeed or throw a\n// recoverable error, but the content process must remain alive.\n\nadd_task(async function test_deep_xpath_optimizer_no_stack_overflow() {\n  await BrowserTestUtils.withNewTab(\"about:blank\", async function (browser) {\n    let spawnError = null;\n    let result = null;\n\n    try {\n      result = await SpecialPowers.spawn(browser, [], async () => {\n        const expr = Array(200000).fill(\"1\").join(\" and \");\n        try {\n          content.document.evaluate(\n            expr,\n            content.document,\n            null,\n            content.XPathResult.ANY_TYPE,\n            null\n          );\n          return { threw: false };\n        } catch (e) {\n          return { threw: true, name: e.name, message: String(e.message) };\n        }\n      });\n    } catch (e) {\n      spawnError = String(e);\n    }\n\n    Assert.equal(\n      spawnError,\n      null,\n      `[Issue Reproduced] Deeply-nested XPath must not crash the content ` +\n        `process (spawn error: ${spawnError})`\n    );\n\n    Assert.ok(\n      !browser.isCrashed,\n      \"[Issue Reproduced] Content process must remain alive after evaluating \" +\n        \"a deeply-nested XPath expression\"\n    );\n\n    if (result) {\n      info(`document.evaluate returned: ${JSON.stringify(result)}`);\n    }\n\n    // Confirm the tab is still responsive by running a trivial script in it.\n    const stillAlive = await SpecialPowers.spawn(browser, [], () => {\n      return 1 + 1;\n    });\n    Assert.equal(stillAlive, 2, \"Content process is still responsive\");\n  });\n});\n", "run_output": "Running: ./mach test browser/base/content/test/general/browser_bug2041933.js\nSkipping test file installation (up to date). Run with --force to force reinstallation.\nStreaming resource usage profile to: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/.mozbuild/logs/test/profile_log_20260528_122401.json\n 0:00.20 INFO These variables are available in the mozinfo environment and can be used to skip tests conditionally:\n 0:00.20 INFO     a11y_checks: False\n 0:00.20 INFO     android: False\n 0:00.20 INFO     apple_catalina: False\n 0:00.20 INFO     apple_silicon: True\n 0:00.20 INFO     appname: firefox\n 0:00.20 INFO     arch: aarch64\n 0:00.20 INFO     artifact: True\n 0:00.20 INFO     asan: False\n 0:00.20 INFO     automation: False\n 0:00.20 INFO     bin_suffix:\n 0:00.20 INFO     bits: 64\n 0:00.20 INFO     buildapp: browser\n 0:00.20 INFO     buildtype: opt\n 0:00.20 INFO     buildtype_guess: opt\n 0:00.20 INFO     cc_type: None\n 0:00.20 INFO     ccov: False\n 0:00.20 INFO     condprof: False\n 0:00.20 INFO     coverage: False\n 0:00.20 INFO     crashreporter: True\n 0:00.20 INFO     datareporting: True\n 0:00.20 INFO     dbus_enabled: False\n 0:00.20 INFO     debug: False\n 0:00.20 INFO     devedition: False\n 0:00.20 INFO     display: None\n 0:00.20 INFO     e10s: True\n 0:00.20 INFO     early_beta_or_earlier: True\n 0:00.20 INFO     fission: True\n 0:00.20 INFO     has_sandbox: True\n 0:00.20 INFO     headless: False\n 0:00.20 INFO     healthreport: True\n 0:00.20 INFO     http2: False\n 0:00.20 INFO     http3: False\n 0:00.20 INFO     inc_origin_init: False\n 0:00.20 INFO     is_emulator: False\n 0:00.20 INFO     is_ubuntu: False\n 0:00.20 INFO     isolated_process: False\n 0:00.20 INFO     macos_vm: False\n 0:00.20 INFO     mda_gpu: False\n 0:00.20 INFO     mingw: False\n 0:00.20 INFO     mozconfig: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/.mozconfig\n 0:00.20 INFO     msix: False\n 0:00.20 INFO     nightly_build: True\n 0:00.20 INFO     nogpu: False\n 0:00.20 INFO     normandy: True\n 0:00.20 INFO     official: False\n 0:00.20 INFO     opt: True\n 0:00.20 INFO     os: mac\n 0:00.20 INFO     os_version: 26.40\n 0:00.20 INFO     pgo: False\n 0:00.20 INFO     platform_guess: macosx64\n 0:00.20 INFO     processor: aarch64\n 0:00.20 INFO     release_or_beta: False\n 0:00.20 INFO     require_signing: False\n 0:00.20 INFO     sessionHistoryInParent: True\n 0:00.20 INFO     socketprocess_e10s: False\n 0:00.20 INFO     socketprocess_networking: False\n 0:00.20 INFO     standalone: False\n 0:00.20 INFO     stylo: True\n 0:00.20 INFO     swgl: False\n 0:00.20 INFO     sync: True\n 0:00.20 INFO     telemetry: False\n 0:00.20 INFO     tests_enabled: True\n 0:00.20 INFO     toolkit: cocoa\n 0:00.20 INFO     topobjdir: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0\n 0:00.20 INFO     topsrcdir: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933\n 0:00.20 INFO     tsan: False\n 0:00.20 INFO     ubsan: False\n 0:00.20 INFO     updater: True\n 0:00.20 INFO     verify: False\n 0:00.20 INFO     verify_fission: False\n 0:00.20 INFO     version: OS X 26.4.1\n 0:00.20 INFO     vertical_tab: False\n 0:00.20 INFO     win10_2009: False\n 0:00.20 INFO     win11_2009: False\n 0:00.20 INFO     wmfme: 0\n 0:00.20 INFO     xorigin: False\n 0:00.20 INFO Checking for ssltunnel processes...\n 0:00.23 INFO Checking for xpcshell processes...\n 0:00.25 SUITE_START: mochitest-browser - running 1 tests\n 0:00.25 INFO Running manifest: browser/base/content/test/general/browser.toml\n 0:02.92 pid:80429 Full command: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/bin/pk12util -i /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/build/pgo/certs/mochitest.client -w /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner/.crtdbpw -d /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner\npid:80429 pk12util: PKCS12 IMPORT SUCCESSFUL\n 0:02.95 INFO MochitestServer : launching ['/Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/bin/xpcshell', '-g', '/Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/Nightly.app/Contents/Resources', '-e', \"const _PROFILE_PATH = '/var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner'; const _SERVER_PORT = '8888'; const _SERVER_ADDR = '127.0.0.1'; const _TEST_PREFIX = undefined; const _DISPLAY_RESULTS = false; const _HTTPD_PATH = '/Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/bin/components'; \", '-f', '/Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/_tests/testing/mochitest/server.js']\n 0:02.95 INFO runtests.py | Server pid: 80431\n 0:02.95 INFO runtests.py | Websocket server pid: 80432\n 0:02.96 INFO runtests.py | SSL tunnel pid: 80433\n 0:03.12 INFO use http3 server: False\n 0:03.12 INFO Use build node at /Users/dimi/.mozbuild/node/bin/node\n 0:03.12 INFO mozserve | Found moz-http2 server path: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/_tests/testing/mochitest/xpcshell/moz-http2/moz-http2.js\n 0:03.12 INFO Found node at /Users/dimi/.mozbuild/node/bin/node\n 0:03.25 INFO mozserve | moz-http2 server msg: HTTP2 server listening on ports 52339,52340\n 0:03.25 INFO moz-http2 server started on ports 52339, 52340\n 0:03.25 INFO node moz-http2 [stderr] (node:80436) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.\n 0:03.25 INFO node moz-http2 [stderr] (Use `node --trace-deprecation ...` to show where the warning was created)\n 0:03.25 INFO runtests.py | Running with scheme: http\n 0:03.25 INFO runtests.py | Running with e10s: True\n 0:03.25 INFO runtests.py | Running with fission: True\n 0:03.25 INFO runtests.py | Running with cross-origin iframes: False\n 0:03.25 INFO runtests.py | Running with socketprocess_e10s: False\n 0:03.25 INFO runtests.py | Running http tests: start.\n 0:03.27 WARNING Found 'firefox' running before starting test browser!\n 0:03.27 WARNING {'cmdline': ['/Applications/Firefox Nightly.app/Contents/MacOS/firefox', '-foreground'], 'ppid': 1, 'pid': 47978, 'username': 'dimi', 'name': 'firefox'}\n 0:03.27 INFO Application command: /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/Nightly.app/Contents/MacOS/firefox -marionette -remote-allow-system-access -foreground -profile /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner\n 0:03.27 INFO runtests.py | Application pid: 80438\n 0:03.27 Started process `GECKO(80438)`\n 0:03.63 GECKO(80438) [Parent 80438, IPC I/O Parent] WARNING: Failed to launch gpu subprocess @posix_spawnp (Error:2): file /builds/worker/checkouts/gecko/ipc/glue/GeckoChildProcessHost.cpp:825\n 0:03.63 GECKO(80438) [GFX1-]: GPU proc launch error posix_spawnp 0x2\n 0:03.63 GECKO(80438) 1779963844930\tMarionette\tINFO\tMarionette enabled\n 0:03.78 GECKO(80438) 1779963845078\tMarionette\tTRACE\tReceived observer notification final-ui-startup\n 0:03.84 GECKO(80438) 1779963845138\tMarionette\tINFO\tListening on port 2828\n 0:03.84 GECKO(80438) 1779963845138\tMarionette\tDEBUG\tMarionette is listening\n 0:03.86 GECKO(80438) 1779963845158\tMarionette\tDEBUG\tAccepted connection 0 from 127.0.0.1:52346\n 0:03.87 GECKO(80438) 1779963845168\tMarionette\tDEBUG\tClosed connection 0\n 0:03.87 GECKO(80438) 1779963845168\tMarionette\tDEBUG\tAccepted connection 1 from 127.0.0.1:52347\n 0:03.91 GECKO(80438) 1779963845210\tMarionette\tDEBUG\t1 -> [0,1,\"WebDriver:NewSession\",{\"strictFileInteractability\":true}]\n 0:03.92 GECKO(80438) 1779963845214\tMarionette\tDEBUG\tWaiting for initial application window\n 0:03.98 GECKO(80438) [Parent 80438: Main Thread]: I/SlowChromeEvent Please do not use mouseenter/leave events in chrome. They are slower than mouseover/out! chrome://browser/content/tabbrowser/tabs.js:53:12\n 0:04.03 GECKO(80438) [Parent 80438, IPC I/O Parent] WARNING: Failed to launch gpu subprocess @posix_spawnp (Error:2): file /builds/worker/checkouts/gecko/ipc/glue/GeckoChildProcessHost.cpp:825\n 0:04.03 GECKO(80438) [GFX1-]: GPU proc launch error posix_spawnp 0x2\n 0:04.03 GECKO(80438) [Parent 80438, IPC I/O Parent] WARNING: Failed to launch gpu subprocess @posix_spawnp (Error:2): file /builds/worker/checkouts/gecko/ipc/glue/GeckoChildProcessHost.cpp:825\n 0:04.03 GECKO(80438) [GFX1-]: GPU proc launch error posix_spawnp 0x2\n 0:04.03 GECKO(80438) [GFX1-]: Fallback WR to SW-WR\n 0:04.03 GECKO(80438) [GFX1-]: Failed to launch GPU process after 3 attempts\n 0:04.44 GECKO(80438) console.error: services.settings:\n 0:04.44 GECKO(80438)   Message: EmptyDatabaseError: \"main/nimbus-desktop-experiments\" has not been synced yet\n 0:04.44 GECKO(80438)   Stack:\n 0:04.44 GECKO(80438)     EmptyDatabaseError@resource://services-settings/Database.sys.mjs:19:5\n 0:04.44 GECKO(80438) list@resource://services-settings/Database.sys.mjs:96:13\n 0:04.44 GECKO(80438) async*get@resource://services-settings/RemoteSettingsClient.sys.mjs:573:28\n 0:04.44 GECKO(80438) async*getRecipesFromCollection@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:669:30\n 0:04.44 GECKO(80438) getRecipesFromAllCollections@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:563:39\n 0:04.44 GECKO(80438) #updateImpl@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:450:33\n 0:04.44 GECKO(80438) async*updateRecipes/<@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:392:53\n 0:04.44 GECKO(80438) LockGrantedCallback*withUpdateLock@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:349:24\n 0:04.44 GECKO(80438) updateRecipes@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:392:16\n 0:04.44 GECKO(80438) enable@resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs:318:16\n 0:04.44 GECKO(80438) init@resource://nimbus/ExperimentAPI.sys.mjs:303:28\n 0:04.44 GECKO(80438) async*finishInit@resource://normandy/Normandy.sys.mjs:109:30\n 0:04.44 GECKO(80438) async*init@resource://normandy/Normandy.sys.mjs:80:16\n 0:04.44 GECKO(80438) async*fn@resource://gre/modules/BrowserUtils.sys.mjs:83:33\n 0:04.44 GECKO(80438) callSingleListener@resource://gre/modules/BrowserUtils.sys.mjs:728:15\n 0:04.44 GECKO(80438) callModulesFromCategory@resource://gre/modules/BrowserUtils.sys.mjs:769:23\n 0:04.44 GECKO(80438) BG__beforeUIStartup@resource:///modules/BrowserGlue.sys.mjs:415:23\n 0:04.44 GECKO(80438) BG_observe@resource:///modules/BrowserGlue.sys.mjs:195:14\n 0:04.63 GECKO(80438) 1779963845927\tMarionette\tTRACE\tReceived observer notification browser-idle-startup-tasks-finished\n 0:04.73 GECKO(80438) 1779963846027\tRemoteAgent\tTRACE\t[11] ProgressListener Start: expectNavigation=false resolveWhenStarted=false unloadTimeout=5000 waitForExplicitStart=false\n 0:04.73 GECKO(80438) 1779963846027\tRemoteAgent\tTRACE\t[11] ProgressListener Setting unload timer (5000ms)\n 0:04.73 GECKO(80438) 1779963846029\tRemoteAgent\tTRACE\t[11] Wait for initial navigation: isUncommittedInitial=false, isLoadingDocument=false\n 0:04.73 GECKO(80438) 1779963846029\tRemoteAgent\tTRACE\t[11] Document already finished loading: about:blank\n 0:04.73 GECKO(80438) 1779963846029\tRemoteAgent\tTRACE\t[11] ProgressListener Stop: has error=false url=about:blank\n 0:04.74 GECKO(80438) 1779963846035\tMarionette\tDEBUG\t1 <- [1,1,null,{\"sessionId\":\"2984cd61-9de6-47fd-899c-5b9411a94c66\",\"capabilities\":{\"acceptInsecureCerts\":false,\"browserName\":\"firefox\",\"browserVersion\":\"153.0a1\",\"platformName\":\"mac\",\"setWindowRect\":true,\"unhandledPromptBehavior\":\"dismiss and notify\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0\",\"moz:buildID\":\"20260527085321\",\"moz:headless\":false,\"moz:platformVersion\":\"25.4.0\",\"moz:processID\":80438,\"moz:profile\":\"/var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner\",\"moz:shutdownTimeout\":60000,\"pageLoadStrategy\":\"normal\",\"timeouts\":{\"implicit\":0,\"pageLoad\":300000,\"script\":30000},\"strictFileInteractability\":true,\"moz:accessibilityChecks\":false,\"moz:webdriverClick\":true,\"moz:windowless\":false,\"proxy\":{}}}]\n 0:04.75 GECKO(80438) 1779963846043\tMarionette\tDEBUG\t1 -> [0,2,\"Addon:Install\",{\"temporary\":false,\"path\":\"/var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp_fdollwt.zip\"}]\n 0:04.79 GECKO(80438) 1779963846081\tMarionette\tDEBUG\t1 <- [1,2,null,{\"value\":\"special-powers@mozilla.org\"}]\n 0:04.81 GECKO(80438) 1779963846102\tMarionette\tDEBUG\t1 -> [0,3,\"Addon:Install\",{\"temporary\":false,\"path\":\"/var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmpe58he0cu.zip\"}]\n 0:04.81 GECKO(80438) 1779963846108\tMarionette\tDEBUG\t1 <- [1,3,null,{\"value\":\"mochikit@mozilla.org\"}]\n 0:04.81 GECKO(80438) 1779963846109\tMarionette\tDEBUG\t1 -> [0,4,\"Marionette:GetContext\",{}]\n 0:04.81 GECKO(80438) 1779963846109\tMarionette\tDEBUG\t1 <- [1,4,null,{\"value\":\"content\"}]\n 0:04.81 GECKO(80438) 1779963846109\tMarionette\tDEBUG\t1 -> [0,5,\"Marionette:SetContext\",{\"value\":\"chrome\"}]\n 0:04.81 GECKO(80438) 1779963846109\tMarionette\tDEBUG\t1 <- [1,5,null,{\"value\":null}]\n 0:04.82 GECKO(80438) 1779963846113\tMarionette\tDEBUG\t1 -> [0,6,\"WebDriver:ExecuteScript\",{\"script\":\"/* This Source Code Form is subject to the terms of the Mozilla Public\\n * License, v. 2.0. If a copy of the MPL was not distr ... \\n// the flavor and url to load.\\nlet ev = new CustomEvent(\\\"mochitest-load\\\", { detail: [flavor, url] });\\nwin.dispatchEvent(ev);\",\"args\":[{\"flavor\":\"browser-chrome\",\"testUrl\":\"about:blank\"}],\"newSandbox\":true,\"sandbox\":\"default\",\"line\":2276,\"filename\":\"_tests/testing/mochitest/runtests.py\"}]\n 0:04.82 GECKO(80438) 1779963846116\tRemoteAgent\tTRACE\tWebDriverProcessData actor created for PID 80438\n 0:04.82 GECKO(80438) 1779963846116\tMarionette\tTRACE\t[2] MarionetteCommands actor created for window id 4\n 0:04.83 GECKO(80438) 1779963846128\tMarionette\tDEBUG\t1 <- [1,6,null,{\"value\":null}]\n 0:04.83 GECKO(80438) 1779963846129\tMarionette\tDEBUG\t1 -> [0,7,\"Marionette:SetContext\",{\"value\":\"content\"}]\n 0:04.83 GECKO(80438) 1779963846129\tMarionette\tDEBUG\t1 <- [1,7,null,{\"value\":null}]\n 0:04.85 GECKO(80438) 1779963846144\tMarionette\tDEBUG\t1 -> [0,8,\"WebDriver:DeleteSession\",{}]\n 0:04.85 GECKO(80438) 1779963846144\tMarionette\tTRACE\t[2] MarionetteCommands actor destroyed for window id 4\n 0:04.85 GECKO(80438) 1779963846145\tMarionette\tDEBUG\t1 <- [1,8,null,{\"value\":null}]\n 0:04.85 INFO runtests.py | Waiting for browser...\n 0:04.85 GECKO(80438) 1779963846146\tMarionette\tDEBUG\tClosed connection 1\n 0:04.91 INFO *** Start BrowserChrome Test Results ***\n 0:04.91 INFO checking for open sidebars\n 0:04.91 INFO checking window state\n 0:05.01 TEST_START: browser/base/content/test/general/browser_bug2041933.js\n 0:05.01 INFO Entering test test_deep_xpath_optimizer_no_stack_overflow\n 0:05.10 GECKO(80438) console.error:\n 0:05.10 GECKO(80438)   remote browser crashed while on\n 0:05.11 GECKO(80438)   about:blank\n 0:05.14 FAIL test_deep_xpath_optimizer_no_stack_overflow - [Issue Reproduced] Deeply-nested XPath must not crash the content process (spawn error: AbortError: Actor 'SpecialPowers' destroyed before query 'Spawn' was resolved) - \"AbortError: Actor 'SpecialPowers' destroyed before query 'Spawn' was resolved\" == null\nchrome://mochitests/content/browser/browser/base/content/test/general/browser_bug2041933.js:test_deep_xpath_optimizer_no_stack_overflow/<:34\nresource://testing-common/BrowserTestUtils.sys.mjs:withNewTab:132\nchrome://mochitests/content/browser/browser/base/content/test/general/browser_bug2041933.js:test_deep_xpath_optimizer_no_stack_overflow:10\nchrome://mochikit/content/browser-test.js:handleTask:1377\nchrome://mochikit/content/browser-test.js:_runTaskBasedTest:1467\nchrome://mochikit/content/browser-test.js:Tester_execTest:1619\nchrome://mochikit/content/browser-test.js:nextTest/<:1357\nchrome://mochikit/content/tests/SimpleTest/SimpleTest.js:SimpleTest.waitForFocus/<:1060\n 0:05.14 PASS test_deep_xpath_optimizer_no_stack_overflow - [Issue Reproduced] Content process must remain alive after evaluating a deeply-nested XPath expression - true == true\n 0:05.14 GECKO(80438) [Parent 80438, IPC I/O Parent] WARNING: process 80449 exited with status 1: file checkouts/gecko/ipc/chromium/src/chrome/common/process_watcher_posix_sigchld.cc:155\n 0:05.14 PASS test_deep_xpath_optimizer_no_stack_overflow - Content process is still responsive - 2 == 2\n 0:05.15 INFO Leaving test test_deep_xpath_optimizer_no_stack_overflow\n 0:05.37 GECKO(80438) MEMORY STAT vsizeMaxContiguous not supported in this build configuration.\n 0:05.37 GECKO(80438) MEMORY STAT | vsize 444657MB | residentFast 484MB | heapAllocated 223MB\n 0:05.37 INFO checking for open sidebars\n 0:05.37 INFO checking window state\n 0:05.37 TEST_END: Test FAIL, expected PASS. Subtests passed 2/3. Unexpected 1\n 0:05.38 GECKO(80438) Completed ShutdownLeaks collections in process 80438\n 0:05.38 INFO TEST-START | Shutdown\n 0:05.38 INFO Browser Chrome Test Summary\n 0:05.38 INFO Passed:  2\n 0:05.38 INFO Failed:  1\n 0:05.38 INFO Todo:    0\n 0:05.38 INFO Mode:    e10s\n 0:05.38 INFO *** End BrowserChrome Test Results ***\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 GECKO(80438) Exiting due to channel error.\n 0:05.39 Main app process: exit 0\n 0:05.39 INFO runtests.py | Application ran for: 0:00:02.124278\n 0:05.39 INFO zombiecheck | Reading PID log: /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmpc88glmknpidlog\n 0:05.39 INFO ==> process 80438 launched child process 80443\n 0:05.39 INFO ==> process 80438 launched child process 80445\n 0:05.39 INFO ==> process 80438 launched child process 80448\n 0:05.39 INFO ==> process 80438 launched child process 80449\n 0:05.39 INFO ==> process 80438 launched child process 80452\n 0:05.39 INFO ==> process 80438 launched child process 80453\n 0:05.39 INFO ==> process 80438 launched child process 80454\n 0:05.39 INFO ==> process 80438 launched child process 80455\n 0:05.39 INFO ==> process 80438 launched child process 80456\n 0:05.39 INFO ==> process 80438 launched child process 80457\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80448\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80449\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80452\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80453\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80454\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80455\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80456\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80457\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80443\n 0:05.39 INFO zombiecheck | Checking for orphan process with PID: 80445\n 0:05.39 mozcrash INFO Copy/paste: /Users/dimi/.mozbuild/minidump-stackwalk/minidump-stackwalk --cyborg=/var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/EDFA9901-761D-4A83-959B-93ACA14E49CB.json --brief /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner/minidumps/EDFA9901-761D-4A83-959B-93ACA14E49CB.dmp /Users/dimi/.config/auto_triage/testgen-worktrees/2041933/obj-aarch64-apple-darwin25.4.0/dist/crashreporter-symbols\n 0:05.41 CRASH: pid:None. Process type: unknown. Test:browser/base/content/test/general/browser.toml. Minidump analysed:False. Signature:[[Unknown]]\nCrash dump filename: /var/folders/0j/spy6s1m94t72wcnv6t4dxpm00000gn/T/tmp4lm12klq.mozrunner/minidumps/EDFA9901-761D-4A83-959B-93ACA14E49CB.dmp\nstderr from minidump-stackwalk:\n\u001b[31mERROR\u001b[0m MissingThreadList - Error processing dump: The thread list stream was not found\n 0:05.41 INFO runtests.py | Running http tests: end. status: 0\n 0:05.41 INFO Stopping web server\n 0:05.41 INFO Server shut down.\n 0:05.41 INFO Web server killed.\n 0:05.41 INFO Stopping web socket server\n 0:05.41 INFO Stopping ssltunnel\n 0:05.41 WARNING leakcheck | refcount logging is off, so leaks can't be detected!\n 0:05.42 INFO Buffered messages finished\nTEST-INFO | checking window state\nBrowser Chrome Test Summary\n\tPassed: 2\n\tFailed: 1\n\tTodo: 0\n\tRetried: 0\n\tMode: e10s\n*** End BrowserChrome Test Results ***\n 0:05.42 INFO Buffered messages finished\n 0:05.42 SUITE_END\n 0:05.42\nOverall Summary\n===============\nmochitest-browser\n~~~~~~~~~~~~~~~~~\nRan 4 checks (3 subtests, 1 tests)\nExpected results: 2\nUnexpected results: 2\n  test: 1 (1 fail)\n  subtest: 1 (1 fail)\nError Summary\n-------------\nbrowser/base/content/test/general/browser_bug2041933.js\n  FAIL test_deep_xpath_optimizer_no_stack_overflow - [Issue Reproduced] Deeply-nested XPath must not crash the content process (spawn error: AbortError: Actor 'SpecialPowers' destroyed before query 'Spawn' was resolved) - \"AbortError: Actor 'SpecialPowers' destroyed before query 'Spawn' was resolved\" == null\nchrome://mochitests/content/browser/browser/base/content/test/general/browser_bug2041933.js:test_deep_xpath_optimizer_no_stack_overflow/<:34\nresource://testing-common/BrowserTestUtils.sys.mjs:withNewTab:132\nchrome://mochitests/content/browser/browser/base/content/test/general/browser_bug2041933.js:test_deep_xpath_optimizer_no_stack_overflow:10\nchrome://mochikit/content/browser-test.js:handleTask:1377\nchrome://mochikit/content/browser-test.js:_runTaskBasedTest:1467\nchrome://mochikit/content/browser-test.js:Tester_execTest:1619\nchrome://mochikit/content/browser-test.js:nextTest/<:1357\nchrome://mochikit/content/tests/SimpleTest/SimpleTest.js:SimpleTest.waitForFocus/<:1060\n  FAIL browser/base/content/test/general/browser_bug2041933.js - finished in 362ms\n✗ Tests failed (exit 1)", "test_site_source": null, "root_cause": "{\"executive_summary\": \"Bug 2041933 is a content-process stack overflow triggered by passing a deeply nested XPath expression (e.g. `1 and 1 and 1 …` with ~200,000 operands) to `document.evaluate`. The XPath parser builds a left-deep chain of `BooleanExpr` nodes whose depth grows linearly with input length, and `txXPathOptimizer::optimize` — along with the `Expr` virtual methods it invokes — recurses over this tree using the native C++ call stack with no depth check, exhausting the stack and crashing the content process. Because no input from script bounds the AST depth, the issue is reachable from any web page and the content process is killed deterministically.\", \"architecture_overview\": \"The XSLT/XPath subsystem under `dom/xslt/` is built around an `Expr` class hierarchy (`dom/xslt/xpath/txExpr.h`) where each node owns its child expressions through `mozilla::UniquePtr<Expr>`. Key nodes include `BooleanExpr` (represents `and`/`or`, owns `leftExpr` and `rightExpr`), and leaf/unary nodes such as `txLiteralExpr` and `txNumberExpr`. `document.evaluate` reaches `txExprParser::createExprInternal` (`dom/xslt/xpath/txExprParser.cpp:143-177`), which tokenizes the source, then runs an iterative shunting-yard loop (`createExpr`, lines 267-321) using two explicit `txStack` instances to produce the AST — so parsing itself is safe. The resulting tree is then passed to `txXPathOptimizer::optimize` (`dom/xslt/xpath/txXPathOptimizer.cpp:48-101`), which performs three traversals all implemented as direct C++ recursion: a context-sensitivity probe via `Expr::isSensitiveTo`, an early-evaluation attempt via `Expr::evaluate`, and a child-by-child recursive `optimize` walk. Tree destruction is also unbounded recursion, as each `~BooleanExpr` chains into `~UniquePtr<Expr>` for its children.\", \"code_level_analysis\": \"The optimizer entry point at `dom/xslt/xpath/txXPathOptimizer.cpp:48-101` first calls `aInExpr->isSensitiveTo(Expr::ANY_CONTEXT)` (line ~55). `BooleanExpr::isSensitiveTo` (`dom/xslt/xpath/txBooleanExpr.cpp:52-55`) unconditionally recurses into both `leftExpr->isSensitiveTo` and `rightExpr->isSensitiveTo`. For a left-deep tree of depth ~200K, this alone produces ~200K nested frames before reaching a `txLiteralExpr` leaf, which returns `false` unconditionally (`dom/xslt/xpath/txLiteralExpr.cpp:34`). This is the first — and almost certainly actual — overflow point, reported by ASan as `stack-overflow` when `sp` hits the guard page. If `isSensitiveTo` were resolved, `BooleanExpr::evaluate` (`dom/xslt/xpath/txBooleanExpr.cpp:20-48`) would be the next failure, recursing into `leftExpr->evaluateToBool` to the same depth. Finally, the explicit recursive `optimize` call at `dom/xslt/xpath/txXPathOptimizer.cpp:75` — the line cited by the reporter — walks `aInExpr->getSubExprAt(i)` (returning `leftExpr` then `rightExpr` via the `TX_IMPL_EXPR_STUBS_2` macro expansion at `dom/xslt/xpath/txExpr.h:177-189`, applied to `BooleanExpr` at `dom/xslt/xpath/txBooleanExpr.cpp:50`) to the same depth. Independently, `~BooleanExpr` recursively destroys its `UniquePtr<Expr>` children, so even bypassing the optimizer entirely, freeing the parsed tree overflows the stack. The hazard extends beyond `and` to any deeply chained binary operator (`or`, `=`, `+`, `|`, predicates, location-step chains) via analogous recursive methods on `PathExpr`, `UnionExpr`, and other nodes.\", \"root_cause\": \"The root cause is that `txXPathOptimizer::optimize` and the `Expr` virtual methods it relies on (`isSensitiveTo`, `evaluate`, `getSubExprAt`/destruction in `BooleanExpr`, `txNumberExpr`, `PathExpr`, `UnionExpr`, etc.) recurse over the XPath AST using the native C++ call stack with no depth check or iterative-conversion fallback, while the iterative XPath parser accepts arbitrarily long binary-operator chains and produces a left-deep tree whose depth is linear in input length, allowing an attacker-controlled string passed to `document.evaluate` to force recursion deeper than the content-process stack.\", \"suggested_options\": [{\"title\": \"Cap AST depth during XPath parsing\", \"description\": \"In `txExprParser::createExprInternal` (`dom/xslt/xpath/txExprParser.cpp:143-177`) or inside `createExpr`'s shunting-yard loop, maintain a running depth counter and return `NS_ERROR_DOM_INVALID_EXPRESSION_ERR` (or a similar `NS_ERROR_XPATH_*` code) once the produced tree would exceed a generous limit (e.g. 1000 or 4000). This stops the bad tree from ever reaching the optimizer or evaluator and is a minimal, localized change suitable for uplift.\", \"perspective\": \"hot-fix\"}, {\"title\": \"Replace AST recursion with explicit-stack traversal\", \"description\": \"Rewrite `txXPathOptimizer::optimize` (`dom/xslt/xpath/txXPathOptimizer.cpp:48-101`) and the recursive `Expr` virtuals (`BooleanExpr::isSensitiveTo`/`evaluate` in `dom/xslt/xpath/txBooleanExpr.cpp:20-55`, plus analogous methods on `txNumberExpr`, `PathExpr`, `UnionExpr`, etc.) to walk the tree iteratively with an explicit work stack, and convert `BooleanExpr`/`UniquePtr` chain destruction to an iterative teardown so that freeing the tree cannot overflow the stack either.\", \"perspective\": \"long-term\"}, {\"title\": \"Gate traversal with AutoCheckRecursionLimit\", \"description\": \"At the top of `txXPathOptimizer::optimize`, `Expr::isSensitiveTo`, `Expr::evaluate`, and the XSLT pattern optimizer (`txPatternOptimizer::optimize`, `dom/xslt/xslt/txPatternOptimizer.cpp:9`), consult a `mozilla::AutoCheckRecursionLimit` against the current `JSContext`/thread stack and bail with a recoverable `NS_ERROR_XSLT_BAD_RECURSION`-style failure when the budget is exhausted, leaving the existing recursion shape intact.\", \"perspective\": \"alternative\"}]}", "reply_text": null, "workflow_suggestion": {"step": "verify", "reason": "Testcase generated — run it to verify the bug is reproduced."}, "fix_code": null, "fix_option_used": null, "patch_run_output": null, "test_commit_sha": "004d5467f4a2a390d1c63030a5a9ff822a912d4e", "fix_commit_sha": null, "reproduce_script": null, "reproduce_result": null, "regression_range": null, "reproduce_strategy": {"analysis": "This bug is about a stack overflow crash in Firefox's XSLT/XPath engine. The txXPathOptimizer::optimize function recurses through subexpressions without a depth limit, so a deeply-nested XPath expression (like '1 and 1 and 1...' repeated ~200,000 times) passed to document.evaluate causes a stack overflow and crashes the content process.", "plan_steps": [{"text": "Navigate to about:blank"}, {"text": "Open the browser console (F12 or Ctrl+Shift+K)"}, {"text": "Paste and execute the following JavaScript in the console: var expr = Array(200000).fill('1').join(' and '); document.evaluate(expr, document, null, XPathResult.ANY_TYPE, null);"}, {"expected_result": "Firefox content process crashes or the browser tab crashes/hangs due to stack overflow triggered by the deeply-nested XPath expression evaluation.", "text": "Take an OS screenshot"}], "prerequisites": []}, "export_meta": "{\"url\": \"https://dimidl.github.io/auto_triage/2041933.html\", \"branch\": \"master\", \"path\": \"auto_triage/2041933.html\", \"commit\": \"a2db9413240733f7f33c660e10a2f2d2d8374be8\", \"pushed_at\": \"2026-05-28T11:12:43+00:00\"}", "dismissed": 0, "no_duplicate_confirmed": false, "classification": "bug", "is_regression": false, "regression_confidence": null, "platform_scope": "all-platforms", "affected_platforms": [], "component_correct": true, "component_notes": "The bug is correctly filed under Core :: XSLT, as the crash is in dom/xslt/xpath/txXPathOptimizer.cpp.", "suggested_severity": "S2", "severity_rationale": "The crash kills the content process with no workaround for affected pages, though it requires a crafted/malicious input to trigger.", "next_step": "ready-to-fix", "next_step_notes": "The root cause is clearly identified (missing depth check in txXPathOptimizer::optimize). An engineer should add a recursion depth limit or iterative traversal in that function.", "suggested_reply": null, "reporter_type": "user-reported", "similar": [], "similar_ai_analysis": {}, "confirmed_duplicate_ids": [], "test_site_variants": []} };
 const UPDATED_BUGS = {};
 const PLAYWRIGHT_WARNING = null;
 const PLAYWRIGHT_MCP_WARNING = null;
