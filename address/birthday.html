@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
+        form {
+            max-width: 520px;
+            margin: auto;
+            padding: 20px 24px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        h2 { margin-top: 0; }
+        section { margin-bottom: 20px; }
+        section h3 {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 4px;
+        }
+        label { display: block; margin-top: 10px; font-size: 0.9em; font-weight: bold; }
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .row { display: flex; gap: 10px; }
+        .row .field { flex: 1; }
+        button {
+            margin-top: 16px;
+            padding: 10px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <form id="birthdayForm" action="/submit" method="POST" autocomplete="on">
+        <h2>Birthday Form</h2>
+
+        <!-- Birthday as a single date -->
+        <section>
+            <h3>Birthday</h3>
+            <label for="bday">Date of Birth</label>
+            <input type="date" id="bday" name="bday" autocomplete="bday">
+
+            <!-- Birthday split into separate parts -->
+            <p style="font-size: 0.85em; color: #666; margin: 8px 0 4px;">Or enter parts separately:</p>
+            <div class="row">
+                <div class="field">
+                    <label for="bdayMonth">Month</label>
+                    <input type="number" id="bdayMonth" name="bday-month" autocomplete="bday-month" min="1" max="12" placeholder="MM">
+                </div>
+                <div class="field">
+                    <label for="bdayDay">Day</label>
+                    <input type="number" id="bdayDay" name="bday-day" autocomplete="bday-day" min="1" max="31" placeholder="DD">
+                </div>
+                <div class="field">
+                    <label for="bdayYear">Year</label>
+                    <input type="number" id="bdayYear" name="bday-year" autocomplete="bday-year" min="1900" max="2100" placeholder="YYYY">
+                </div>
+            </div>
+        </section>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
