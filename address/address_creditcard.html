@@ -6,7 +6,7 @@
     <title>Address & Credit Card Form</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
-        .container {
+        form {
             max-width: 520px;
             margin: auto;
             padding: 20px 24px;
@@ -47,88 +47,70 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Single form posts both address and credit card fields to a real success page.
+         method="GET" so it works on static hosting (e.g. GitHub Pages). -->
+    <form id="checkoutForm" action="submitted.html" method="GET" autocomplete="on">
         <h2>Checkout</h2>
 
-        <!-- Address form -->
-        <form id="addressForm" action="/submit-address" method="POST" autocomplete="on">
-            <section>
-                <h3>Shipping Address</h3>
-                <label for="fullName">Full Name</label>
-                <input type="text" id="fullName" name="name" autocomplete="name" value="Jane Doe" required>
+        <!-- Address -->
+        <section>
+            <h3>Shipping Address</h3>
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="name" autocomplete="name" value="Jane Doe" required>
 
-                <label for="addressLine1">Street Address</label>
-                <input type="text" id="addressLine1" name="address-line1" autocomplete="address-line1" value="123 Main St" required>
+            <label for="addressLine1">Street Address</label>
+            <input type="text" id="addressLine1" name="address-line1" autocomplete="address-line1" value="123 Main St" required>
 
-                <label for="addressLine2">Apt / Suite / Unit (optional)</label>
-                <input type="text" id="addressLine2" name="address-line2" autocomplete="address-line2" value="Apt 4B">
+            <label for="addressLine2">Apt / Suite / Unit (optional)</label>
+            <input type="text" id="addressLine2" name="address-line2" autocomplete="address-line2" value="Apt 4B">
 
-                <label for="city">City</label>
-                <input type="text" id="city" name="address-level2" autocomplete="address-level2" value="Springfield" required>
+            <label for="city">City</label>
+            <input type="text" id="city" name="address-level2" autocomplete="address-level2" value="Springfield" required>
 
-                <div class="row">
-                    <div class="field">
-                        <label for="state">State / Province</label>
-                        <input type="text" id="state" name="address-level1" autocomplete="address-level1" value="IL" required>
-                    </div>
-                    <div class="field">
-                        <label for="postalCode">ZIP / Postal Code</label>
-                        <input type="text" id="postalCode" name="postal-code" autocomplete="postal-code" value="62704" required>
-                    </div>
+            <div class="row">
+                <div class="field">
+                    <label for="state">State / Province</label>
+                    <input type="text" id="state" name="address-level1" autocomplete="address-level1" value="IL" required>
                 </div>
-
-                <label for="country">Country</label>
-                <input type="text" id="country" name="country-name" autocomplete="country-name" value="United States" required>
-            </section>
-        </form>
-
-        <!-- Credit card form -->
-        <form id="cardForm" action="/submit-card" method="POST" autocomplete="on">
-            <section>
-                <h3>Payment</h3>
-                <label for="ccName">Name on Card</label>
-                <input type="text" id="ccName" name="cc-name" autocomplete="cc-name" value="Jane Doe" required>
-
-                <label for="ccNumber">Card Number</label>
-                <input type="text" id="ccNumber" name="cc-number" autocomplete="cc-number" inputmode="numeric" value="4111 1111 1111 1111" required>
-
-                <div class="row">
-                    <div class="field">
-                        <label for="ccExpMonth">Exp. Month</label>
-                        <input type="text" id="ccExpMonth" name="cc-exp-month" autocomplete="cc-exp-month" inputmode="numeric" placeholder="MM" value="08" required>
-                    </div>
-                    <div class="field">
-                        <label for="ccExpYear">Exp. Year</label>
-                        <input type="text" id="ccExpYear" name="cc-exp-year" autocomplete="cc-exp-year" inputmode="numeric" placeholder="YYYY" value="2028" required>
-                    </div>
-                    <div class="field">
-                        <label for="ccCsc">CVC</label>
-                        <input type="text" id="ccCsc" name="cc-csc" autocomplete="cc-csc" inputmode="numeric" placeholder="CVC" value="123" required>
-                    </div>
+                <div class="field">
+                    <label for="postalCode">ZIP / Postal Code</label>
+                    <input type="text" id="postalCode" name="postal-code" autocomplete="postal-code" value="62704" required>
                 </div>
+            </div>
 
-                <label for="ccType">Card Type</label>
-                <input type="text" id="ccType" name="cc-type" autocomplete="cc-type" value="Visa">
-            </section>
-        </form>
+            <label for="country">Country</label>
+            <input type="text" id="country" name="country-name" autocomplete="country-name" value="United States" required>
+        </section>
 
-        <!-- Single button submits both forms -->
-        <button type="button" id="submitAll">Submit</button>
-    </div>
+        <!-- Credit card -->
+        <section>
+            <h3>Payment</h3>
+            <label for="ccName">Name on Card</label>
+            <input type="text" id="ccName" name="cc-name" autocomplete="cc-name" value="Jane Doe" required>
 
-    <script>
-        document.getElementById('submitAll').addEventListener('click', function () {
-            var addressForm = document.getElementById('addressForm');
-            var cardForm = document.getElementById('cardForm');
+            <label for="ccNumber">Card Number</label>
+            <input type="text" id="ccNumber" name="cc-number" autocomplete="cc-number" inputmode="numeric" value="4111 1111 1111 1111" required>
 
-            // Validate both before submitting either.
-            if (!addressForm.reportValidity() || !cardForm.reportValidity()) {
-                return;
-            }
+            <div class="row">
+                <div class="field">
+                    <label for="ccExpMonth">Exp. Month</label>
+                    <input type="text" id="ccExpMonth" name="cc-exp-month" autocomplete="cc-exp-month" inputmode="numeric" placeholder="MM" value="08" required>
+                </div>
+                <div class="field">
+                    <label for="ccExpYear">Exp. Year</label>
+                    <input type="text" id="ccExpYear" name="cc-exp-year" autocomplete="cc-exp-year" inputmode="numeric" placeholder="YYYY" value="2028" required>
+                </div>
+                <div class="field">
+                    <label for="ccCsc">CVC</label>
+                    <input type="text" id="ccCsc" name="cc-csc" autocomplete="cc-csc" inputmode="numeric" placeholder="CVC" value="123" required>
+                </div>
+            </div>
 
-            addressForm.submit();
-            cardForm.submit();
-        });
-    </script>
+            <label for="ccType">Card Type</label>
+            <input type="text" id="ccType" name="cc-type" autocomplete="cc-type" value="Visa">
+        </section>
+
+        <button type="submit">Submit</button>
+    </form>
 </body>
 </html>

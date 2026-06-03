@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Received</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
+        .container {
+            max-width: 520px;
+            margin: auto;
+            padding: 20px 24px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        h2 { margin-top: 0; }
+        dl { margin: 0; }
+        dt { font-weight: bold; font-size: 0.85em; color: #666; margin-top: 10px; }
+        dd { margin: 2px 0 0; }
+        a { display: inline-block; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>✅ Submission Received</h2>
+        <dl id="values"></dl>
+        <a href="address_creditcard.html">← Back to form</a>
+    </div>
+
+    <script>
+        var params = new URLSearchParams(window.location.search);
+        var dl = document.getElementById('values');
+        if ([...params].length === 0) {
+            dl.innerHTML = '<dd>No data submitted.</dd>';
+        } else {
+            params.forEach(function (value, key) {
+                var dt = document.createElement('dt');
+                dt.textContent = key;
+                var dd = document.createElement('dd');
+                dd.textContent = value;
+                dl.appendChild(dt);
+                dl.appendChild(dd);
+            });
+        }
+    </script>
+</body>
+</html>
