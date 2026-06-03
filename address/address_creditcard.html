@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Address & Credit Card Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
+        .container {
+            max-width: 520px;
+            margin: auto;
+            padding: 20px 24px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        h2 { margin-top: 0; }
+        section { margin-bottom: 20px; }
+        section h3 {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 4px;
+        }
+        label { display: block; margin-top: 10px; font-size: 0.9em; font-weight: bold; }
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .row { display: flex; gap: 10px; }
+        .row .field { flex: 1; }
+        button {
+            margin-top: 16px;
+            padding: 10px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            width: 100%;
+        }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Checkout</h2>
+
+        <!-- Address form -->
+        <form id="addressForm" action="/submit-address" method="POST" autocomplete="on">
+            <section>
+                <h3>Shipping Address</h3>
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" name="name" autocomplete="name" value="Jane Doe" required>
+
+                <label for="addressLine1">Street Address</label>
+                <input type="text" id="addressLine1" name="address-line1" autocomplete="address-line1" value="123 Main St" required>
+
+                <label for="addressLine2">Apt / Suite / Unit (optional)</label>
+                <input type="text" id="addressLine2" name="address-line2" autocomplete="address-line2" value="Apt 4B">
+
+                <label for="city">City</label>
+                <input type="text" id="city" name="address-level2" autocomplete="address-level2" value="Springfield" required>
+
+                <div class="row">
+                    <div class="field">
+                        <label for="state">State / Province</label>
+                        <input type="text" id="state" name="address-level1" autocomplete="address-level1" value="IL" required>
+                    </div>
+                    <div class="field">
+                        <label for="postalCode">ZIP / Postal Code</label>
+                        <input type="text" id="postalCode" name="postal-code" autocomplete="postal-code" value="62704" required>
+                    </div>
+                </div>
+
+                <label for="country">Country</label>
+                <input type="text" id="country" name="country-name" autocomplete="country-name" value="United States" required>
+            </section>
+        </form>
+
+        <!-- Credit card form -->
+        <form id="cardForm" action="/submit-card" method="POST" autocomplete="on">
+            <section>
+                <h3>Payment</h3>
+                <label for="ccName">Name on Card</label>
+                <input type="text" id="ccName" name="cc-name" autocomplete="cc-name" value="Jane Doe" required>
+
+                <label for="ccNumber">Card Number</label>
+                <input type="text" id="ccNumber" name="cc-number" autocomplete="cc-number" inputmode="numeric" value="4111 1111 1111 1111" required>
+
+                <div class="row">
+                    <div class="field">
+                        <label for="ccExpMonth">Exp. Month</label>
+                        <input type="text" id="ccExpMonth" name="cc-exp-month" autocomplete="cc-exp-month" inputmode="numeric" placeholder="MM" value="08" required>
+                    </div>
+                    <div class="field">
+                        <label for="ccExpYear">Exp. Year</label>
+                        <input type="text" id="ccExpYear" name="cc-exp-year" autocomplete="cc-exp-year" inputmode="numeric" placeholder="YYYY" value="2028" required>
+                    </div>
+                    <div class="field">
+                        <label for="ccCsc">CVC</label>
+                        <input type="text" id="ccCsc" name="cc-csc" autocomplete="cc-csc" inputmode="numeric" placeholder="CVC" value="123" required>
+                    </div>
+                </div>
+
+                <label for="ccType">Card Type</label>
+                <input type="text" id="ccType" name="cc-type" autocomplete="cc-type" value="Visa">
+            </section>
+        </form>
+
+        <!-- Single button submits both forms -->
+        <button type="button" id="submitAll">Submit</button>
+    </div>
+
+    <script>
+        document.getElementById('submitAll').addEventListener('click', function () {
+            var addressForm = document.getElementById('addressForm');
+            var cardForm = document.getElementById('cardForm');
+
+            // Validate both before submitting either.
+            if (!addressForm.reportValidity() || !cardForm.reportValidity()) {
+                return;
+            }
+
+            addressForm.submit();
+            cardForm.submit();
+        });
+    </script>
+</body>
+</html>
