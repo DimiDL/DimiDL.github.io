@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenCart Checkout Form - Autofill Heuristics Test</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+h1 {
+  font-size: 1.4em;
+}
+label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  font-size: 1em;
+}
+button {
+  margin-top: 20px;
+  padding: 8px 20px;
+  font-size: 1em;
+}
+fieldset {
+  border: 1px solid #ccc;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+legend {
+  font-weight: bold;
+  padding: 0 6px;
+}
+</style>
+</head>
+<body>
+<h1>OpenCart Standard Checkout Form</h1>
+<p>This form reproduces the standard OpenCart field names and autocomplete attributes to test Firefox Form Autofill heuristics.</p>
+
+<form method="post" action="#">
+  <fieldset>
+    <legend>Personal Details</legend>
+
+    <label for="firstname">First Name</label>
+    <input type="text" id="firstname" name="firstname" autocomplete="given-name" placeholder="First Name">
+
+    <label for="lastname">Last Name</label>
+    <input type="text" id="lastname" name="lastname" autocomplete="family-name" placeholder="Last Name">
+  </fieldset>
+
+  <button type="submit">Continue</button>
+</form>
+</body>
+</html>
