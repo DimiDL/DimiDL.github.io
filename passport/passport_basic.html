@@ -37,12 +37,32 @@
             font-size: 1em;
         }
         button:hover { background-color: #45a049; }
+        .profiles {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .profiles button {
+            margin-top: 0;
+            background-color: #2962ff;
+            font-size: 0.9em;
+            padding: 8px 12px;
+            flex: 1;
+        }
+        .profiles button:hover { background-color: #0039cb; }
     </style>
 </head>
 <body>
 
     <form id="passportForm" action="/submit" method="POST">
         <h2>Passport</h2>
+
+        <div class="profiles">
+            <button type="button" onclick="fillProfile(0)">Profile 1 (US)</button>
+            <button type="button" onclick="fillProfile(1)">Profile 2 (DE)</button>
+            <button type="button" onclick="fillProfile(2)">Profile 3 (CA)</button>
+        </div>
 
         <label for="passportName">Name</label>
         <input type="text" id="passportName" name="passport-name" required>
@@ -66,6 +86,45 @@
 
         <button type="submit">Submit</button>
     </form>
+
+    <script>
+        // Fake but format-valid passport profiles.
+        const profiles = [
+            {
+                // US: 9 digits
+                name: "John Michael Smith",
+                number: "538003821",
+                country: "United States of America",
+                issue: "2019-04-12",
+                expiry: "2029-04-11"
+            },
+            {
+                // Germany: letter + 8 alphanumeric (no I/O/0/1)
+                name: "Anna Maria Schmidt",
+                number: "C7TY29F84",
+                country: "Germany",
+                issue: "2021-08-30",
+                expiry: "2031-08-29"
+            },
+            {
+                // Canada: 2 letters + 6 digits
+                name: "Émilie Claire Tremblay",
+                number: "GA482157",
+                country: "Canada",
+                issue: "2020-11-05",
+                expiry: "2030-11-04"
+            }
+        ];
+
+        function fillProfile(i) {
+            const p = profiles[i];
+            document.getElementById("passportName").value = p.name;
+            document.getElementById("passportNumber").value = p.number;
+            document.getElementById("passportCountry").value = p.country;
+            document.getElementById("issueDate").value = p.issue;
+            document.getElementById("expiryDate").value = p.expiry;
+        }
+    </script>
 
 </body>
 </html>
