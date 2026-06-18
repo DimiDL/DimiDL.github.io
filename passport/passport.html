@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passport Forms (EN / DE / JP / ZH / FR)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
+        form {
+            max-width: 520px;
+            margin: 0 auto 32px;
+            padding: 20px 24px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        h2 { margin-top: 0; }
+        .lang-tag {
+            display: inline-block;
+            font-size: 0.75em;
+            font-weight: bold;
+            color: #fff;
+            background: #4CAF50;
+            padding: 2px 8px;
+            border-radius: 10px;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+        section { margin-bottom: 20px; }
+        section h3 {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 4px;
+        }
+        label { display: block; margin-top: 10px; font-size: 0.9em; font-weight: bold; }
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .row { display: flex; gap: 10px; }
+        .row .field { flex: 1; }
+        button {
+            margin-top: 16px;
+            padding: 10px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+
+    <!-- ============ ENGLISH ============ -->
+    <form id="passportForm-en" action="/submit" method="POST">
+        <h2>Passport Application<span class="lang-tag">EN</span></h2>
+
+        <section>
+            <h3>Holder</h3>
+            <div class="row">
+                <div class="field">
+                    <label for="en-givenName">Given Names</label>
+                    <input type="text" id="en-givenName" name="given-name" required>
+                </div>
+                <div class="field">
+                    <label for="en-familyName">Surname</label>
+                    <input type="text" id="en-familyName" name="family-name" required>
+                </div>
+            </div>
+            <label for="en-sex">Sex</label>
+            <select id="en-sex" name="sex">
+                <option value="">--</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="X">Unspecified</option>
+            </select>
+            <label for="en-bday">Date of Birth</label>
+            <input type="date" id="en-bday" name="bday">
+            <label for="en-birthPlace">Place of Birth</label>
+            <input type="text" id="en-birthPlace" name="birth-place">
+            <label for="en-nationality">Nationality</label>
+            <input type="text" id="en-nationality" name="nationality">
+        </section>
+
+        <section>
+            <h3>Passport</h3>
+            <label for="en-passportNumber">Passport Number</label>
+            <input type="text" id="en-passportNumber" name="passport-number" required>
+            <label for="en-issuingCountry">Issuing Country</label>
+            <input type="text" id="en-issuingCountry" name="issuing-country">
+            <div class="row">
+                <div class="field">
+                    <label for="en-issueDate">Date of Issue</label>
+                    <input type="date" id="en-issueDate" name="issue-date">
+                </div>
+                <div class="field">
+                    <label for="en-expiryDate">Date of Expiry</label>
+                    <input type="date" id="en-expiryDate" name="expiry-date">
+                </div>
+            </div>
+            <label for="en-authority">Issuing Authority</label>
+            <input type="text" id="en-authority" name="authority">
+        </section>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- ============ GERMAN ============ -->
+    <form id="passportForm-de" action="/submit" method="POST" lang="de">
+        <h2>Reisepass-Antrag<span class="lang-tag">DE</span></h2>
+
+        <section>
+            <h3>Inhaber</h3>
+            <div class="row">
+                <div class="field">
+                    <label for="de-givenName">Vornamen</label>
+                    <input type="text" id="de-givenName" name="given-name" required>
+                </div>
+                <div class="field">
+                    <label for="de-familyName">Name</label>
+                    <input type="text" id="de-familyName" name="family-name" required>
+                </div>
+            </div>
+            <label for="de-sex">Geschlecht</label>
+            <select id="de-sex" name="sex">
+                <option value="">--</option>
+                <option value="M">Männlich</option>
+                <option value="F">Weiblich</option>
+                <option value="X">Unbestimmt</option>
+            </select>
+            <label for="de-bday">Geburtsdatum</label>
+            <input type="date" id="de-bday" name="bday">
+            <label for="de-birthPlace">Geburtsort</label>
+            <input type="text" id="de-birthPlace" name="birth-place">
+            <label for="de-nationality">Staatsangehörigkeit</label>
+            <input type="text" id="de-nationality" name="nationality">
+        </section>
+
+        <section>
+            <h3>Reisepass</h3>
+            <label for="de-passportNumber">Passnummer</label>
+            <input type="text" id="de-passportNumber" name="passport-number" required>
+            <label for="de-issuingCountry">Ausstellungsland</label>
+            <input type="text" id="de-issuingCountry" name="issuing-country">
+            <div class="row">
+                <div class="field">
+                    <label for="de-issueDate">Ausstellungsdatum</label>
+                    <input type="date" id="de-issueDate" name="issue-date">
+                </div>
+                <div class="field">
+                    <label for="de-expiryDate">Gültig bis</label>
+                    <input type="date" id="de-expiryDate" name="expiry-date">
+                </div>
+            </div>
+            <label for="de-authority">Ausstellende Behörde</label>
+            <input type="text" id="de-authority" name="authority">
+        </section>
+
+        <button type="submit">Absenden</button>
+    </form>
+
+    <!-- ============ JAPANESE ============ -->
+    <form id="passportForm-ja" action="/submit" method="POST" lang="ja">
+        <h2>パスポート申請<span class="lang-tag">JP</span></h2>
+
+        <section>
+            <h3>所持人</h3>
+            <div class="row">
+                <div class="field">
+                    <label for="ja-givenName">名</label>
+                    <input type="text" id="ja-givenName" name="given-name" required>
+                </div>
+                <div class="field">
+                    <label for="ja-familyName">姓</label>
+                    <input type="text" id="ja-familyName" name="family-name" required>
+                </div>
+            </div>
+            <label for="ja-sex">性別</label>
+            <select id="ja-sex" name="sex">
+                <option value="">--</option>
+                <option value="M">男性</option>
+                <option value="F">女性</option>
+                <option value="X">未指定</option>
+            </select>
+            <label for="ja-bday">生年月日</label>
+            <input type="date" id="ja-bday" name="bday">
+            <label for="ja-birthPlace">出生地</label>
+            <input type="text" id="ja-birthPlace" name="birth-place">
+            <label for="ja-nationality">国籍</label>
+            <input type="text" id="ja-nationality" name="nationality">
+        </section>
+
+        <section>
+            <h3>旅券</h3>
+            <label for="ja-passportNumber">旅券番号</label>
+            <input type="text" id="ja-passportNumber" name="passport-number" required>
+            <label for="ja-issuingCountry">発行国</label>
+            <input type="text" id="ja-issuingCountry" name="issuing-country">
+            <div class="row">
+                <div class="field">
+                    <label for="ja-issueDate">発行年月日</label>
+                    <input type="date" id="ja-issueDate" name="issue-date">
+                </div>
+                <div class="field">
+                    <label for="ja-expiryDate">有効期限満了日</label>
+                    <input type="date" id="ja-expiryDate" name="expiry-date">
+                </div>
+            </div>
+            <label for="ja-authority">発行官庁</label>
+            <input type="text" id="ja-authority" name="authority">
+        </section>
+
+        <button type="submit">送信</button>
+    </form>
+
+    <!-- ============ CHINESE ============ -->
+    <form id="passportForm-zh" action="/submit" method="POST" lang="zh">
+        <h2>护照申请<span class="lang-tag">ZH</span></h2>
+
+        <section>
+            <h3>持有人</h3>
+            <div class="row">
+                <div class="field">
+                    <label for="zh-givenName">名</label>
+                    <input type="text" id="zh-givenName" name="given-name" required>
+                </div>
+                <div class="field">
+                    <label for="zh-familyName">姓</label>
+                    <input type="text" id="zh-familyName" name="family-name" required>
+                </div>
+            </div>
+            <label for="zh-sex">性别</label>
+            <select id="zh-sex" name="sex">
+                <option value="">--</option>
+                <option value="M">男</option>
+                <option value="F">女</option>
+                <option value="X">未指定</option>
+            </select>
+            <label for="zh-bday">出生日期</label>
+            <input type="date" id="zh-bday" name="bday">
+            <label for="zh-birthPlace">出生地点</label>
+            <input type="text" id="zh-birthPlace" name="birth-place">
+            <label for="zh-nationality">国籍</label>
+            <input type="text" id="zh-nationality" name="nationality">
+        </section>
+
+        <section>
+            <h3>护照</h3>
+            <label for="zh-passportNumber">护照号码</label>
+            <input type="text" id="zh-passportNumber" name="passport-number" required>
+            <label for="zh-issuingCountry">签发国家</label>
+            <input type="text" id="zh-issuingCountry" name="issuing-country">
+            <div class="row">
+                <div class="field">
+                    <label for="zh-issueDate">签发日期</label>
+                    <input type="date" id="zh-issueDate" name="issue-date">
+                </div>
+                <div class="field">
+                    <label for="zh-expiryDate">有效期至</label>
+                    <input type="date" id="zh-expiryDate" name="expiry-date">
+                </div>
+            </div>
+            <label for="zh-authority">签发机关</label>
+            <input type="text" id="zh-authority" name="authority">
+        </section>
+
+        <button type="submit">提交</button>
+    </form>
+
+    <!-- ============ FRENCH ============ -->
+    <form id="passportForm-fr" action="/submit" method="POST" lang="fr">
+        <h2>Demande de passeport<span class="lang-tag">FR</span></h2>
+
+        <section>
+            <h3>Titulaire</h3>
+            <div class="row">
+                <div class="field">
+                    <label for="fr-givenName">Prénoms</label>
+                    <input type="text" id="fr-givenName" name="given-name" required>
+                </div>
+                <div class="field">
+                    <label for="fr-familyName">Nom</label>
+                    <input type="text" id="fr-familyName" name="family-name" required>
+                </div>
+            </div>
+            <label for="fr-sex">Sexe</label>
+            <select id="fr-sex" name="sex">
+                <option value="">--</option>
+                <option value="M">Masculin</option>
+                <option value="F">Féminin</option>
+                <option value="X">Non spécifié</option>
+            </select>
+            <label for="fr-bday">Date de naissance</label>
+            <input type="date" id="fr-bday" name="bday">
+            <label for="fr-birthPlace">Lieu de naissance</label>
+            <input type="text" id="fr-birthPlace" name="birth-place">
+            <label for="fr-nationality">Nationalité</label>
+            <input type="text" id="fr-nationality" name="nationality">
+        </section>
+
+        <section>
+            <h3>Passeport</h3>
+            <label for="fr-passportNumber">Numéro de passeport</label>
+            <input type="text" id="fr-passportNumber" name="passport-number" required>
+            <label for="fr-issuingCountry">Pays de délivrance</label>
+            <input type="text" id="fr-issuingCountry" name="issuing-country">
+            <div class="row">
+                <div class="field">
+                    <label for="fr-issueDate">Date de délivrance</label>
+                    <input type="date" id="fr-issueDate" name="issue-date">
+                </div>
+                <div class="field">
+                    <label for="fr-expiryDate">Date d'expiration</label>
+                    <input type="date" id="fr-expiryDate" name="expiry-date">
+                </div>
+            </div>
+            <label for="fr-authority">Autorité de délivrance</label>
+            <input type="text" id="fr-authority" name="authority">
+        </section>
+
+        <button type="submit">Envoyer</button>
+    </form>
+
+</body>
+</html>
