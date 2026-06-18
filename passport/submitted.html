@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passport Submitted</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
+        .card {
+            max-width: 520px;
+            margin: 0 auto 32px;
+            padding: 20px 24px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        h2 { margin-top: 0; }
+        .ok { color: #2e7d32; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td {
+            text-align: left;
+            padding: 8px 4px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95em;
+            vertical-align: top;
+        }
+        th { width: 40%; color: #555; font-weight: bold; }
+        td { word-break: break-word; }
+        .empty { color: #999; font-style: italic; }
+        a.back {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 10px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 1em;
+        }
+        a.back:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2 class="ok">&#10004; Passport submitted</h2>
+        <p>The following details were received:</p>
+        <table>
+            <tbody>
+                <tr><th>Name</th><td id="v-passport-name"></td></tr>
+                <tr><th>Passport Number</th><td id="v-passport-number"></td></tr>
+                <tr><th>Country</th><td id="v-passport-country"></td></tr>
+                <tr><th>Date of Issue</th><td id="v-issue-date"></td></tr>
+                <tr><th>Date of Expiry</th><td id="v-expiry-date"></td></tr>
+            </tbody>
+        </table>
+        <a class="back" href="passport_basic.html">&#8592; Back to form</a>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const fields = ["passport-name", "passport-number", "passport-country", "issue-date", "expiry-date"];
+        for (const field of fields) {
+            const cell = document.getElementById("v-" + field);
+            const value = params.get(field);
+            if (value) {
+                cell.textContent = value;
+            } else {
+                cell.textContent = "(not provided)";
+                cell.className = "empty";
+            }
+        }
+    </script>
+
+</body>
+</html>
