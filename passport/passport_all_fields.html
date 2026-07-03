@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passport Form (All Heuristic Fields)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
+        form {
+            max-width: 560px;
+            margin: 0 auto 32px;
+            padding: 20px 24px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        h2 { margin-top: 0; }
+        label { display: block; margin-top: 10px; font-size: 0.9em; font-weight: bold; }
+        .hint { font-weight: normal; color: #888; font-size: 0.8em; }
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .row { display: flex; gap: 10px; }
+        .row .field { flex: 1; }
+        button {
+            margin-top: 16px;
+            padding: 10px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover { background-color: #45a049; }
+        button[type="reset"] { background-color: #757575; margin-left: 8px; }
+        button[type="reset"]:hover { background-color: #5e5e5e; }
+        .profiles {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .profiles button {
+            margin-top: 0;
+            background-color: #2962ff;
+            font-size: 0.9em;
+            padding: 8px 12px;
+            flex: 1;
+        }
+        .profiles button:hover { background-color: #0039cb; }
+        .intro { max-width: 560px; margin: 0 auto 20px; color: #444; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <div class="intro">
+        <p>
+            Two passport forms whose field <code>name</code>/<code>id</code>/label
+            are written to match every rule in the Form Autofill passport heuristic
+            (<code>HeuristicsRegExp.sys.mjs</code>). No <code>autocomplete</code>
+            attributes are used, so detection comes purely from the regex heuristic.
+            The gray hint under each field is the expected classification.
+        </p>
+    </div>
+
+    <!--
+      Form 1 - full name + combined issue/expiry dates.
+      Covers: passport-name, passport-number, passport-country,
+              passport-issue-date, passport-expiry-date
+    -->
+    <form id="passportFormCombined" action="submitted.html" method="GET">
+        <h2>Passport (full name, combined dates)</h2>
+
+        <div class="profiles">
+            <button type="button" onclick="fillCombined(0)">Profile 1 (US)</button>
+            <button type="button" onclick="fillCombined(1)">Profile 2 (DE)</button>
+            <button type="button" onclick="fillCombined(2)">Profile 3 (CA)</button>
+        </div>
+
+        <label for="passportName">Name on Passport
+            <span class="hint">&rarr; passport-name</span></label>
+        <input type="text" id="passportName" name="passport-name" required>
+
+        <label for="passportNumber">Passport Number
+            <span class="hint">&rarr; passport-number</span></label>
+        <input type="text" id="passportNumber" name="passport-number" required>
+
+        <label for="passportCountry">Issuing Country
+            <span class="hint">&rarr; passport-country</span></label>
+        <input type="text" id="passportCountry" name="passport-country">
+
+        <div class="row">
+            <div class="field">
+                <label for="passportIssueDate">Date of Issue
+                    <span class="hint">&rarr; passport-issue-date</span></label>
+                <input type="text" id="passportIssueDate" name="passport-issue-date"
+                       placeholder="YYYY-MM-DD">
+            </div>
+            <div class="field">
+                <label for="passportExpiryDate">Passport Expiry Date
+                    <span class="hint">&rarr; passport-expiry-date</span></label>
+                <input type="text" id="passportExpiryDate" name="passport-expiry-date"
+                       placeholder="YYYY-MM-DD">
+            </div>
+        </div>
+
+        <button type="submit">Submit</button>
+        <button type="reset">Clear</button>
+    </form>
+
+    <!--
+      Form 2 - split names + split issue/expiry dates.
+      Covers: passport-given-name, passport-additional-name, passport-family-name,
+              passport-number, passport-country,
+              passport-issue-date-month/day/year,
+              passport-expiry-date-month/day/year
+      Note: expiry parts must contain a "passport"/"document" token because the
+      expiry rules use a (?=.*(passport|document)) lookahead; the issue rules do not.
+    -->
+    <form id="passportFormSplit" action="submitted.html" method="GET">
+        <h2>Passport (split name, split dates)</h2>
+
+        <div class="profiles">
+            <button type="button" onclick="fillSplit(0)">Profile 1 (US)</button>
+            <button type="button" onclick="fillSplit(1)">Profile 2 (DE)</button>
+            <button type="button" onclick="fillSplit(2)">Profile 3 (CA)</button>
+        </div>
+
+        <div class="row">
+            <div class="field">
+                <label for="passportGivenName">Given Names (Passport)
+                    <span class="hint">&rarr; passport-given-name</span></label>
+                <input type="text" id="passportGivenName" name="passport-given-name" required>
+            </div>
+            <div class="field">
+                <label for="passportAdditionalName">Middle Name (Passport)
+                    <span class="hint">&rarr; passport-additional-name</span></label>
+                <input type="text" id="passportAdditionalName" name="passport-additional-name">
+            </div>
+            <div class="field">
+                <label for="passportFamilyName">Surname (Passport)
+                    <span class="hint">&rarr; passport-family-name</span></label>
+                <input type="text" id="passportFamilyName" name="passport-family-name" required>
+            </div>
+        </div>
+
+        <label for="passportNumberSplit">Passport Number
+            <span class="hint">&rarr; passport-number</span></label>
+        <input type="text" id="passportNumberSplit" name="passport-number" required>
+
+        <label for="passportCountrySplit">Issuing Country
+            <span class="hint">&rarr; passport-country</span></label>
+        <input type="text" id="passportCountrySplit" name="passport-country">
+
+        <label>Date of Issue</label>
+        <div class="row">
+            <div class="field">
+                <label for="issueMonth">Issue Month
+                    <span class="hint">&rarr; passport-issue-date-month</span></label>
+                <input type="text" id="issueMonth" name="passport-issue-date-month"
+                       placeholder="MM">
+            </div>
+            <div class="field">
+                <label for="issueDay">Issue Day
+                    <span class="hint">&rarr; passport-issue-date-day</span></label>
+                <input type="text" id="issueDay" name="passport-issue-date-day"
+                       placeholder="DD">
+            </div>
+            <div class="field">
+                <label for="issueYear">Issue Year
+                    <span class="hint">&rarr; passport-issue-date-year</span></label>
+                <input type="text" id="issueYear" name="passport-issue-date-year"
+                       placeholder="YYYY">
+            </div>
+        </div>
+
+        <label>Date of Expiry</label>
+        <div class="row">
+            <div class="field">
+                <label for="expiryMonth">Passport Expiry Month
+                    <span class="hint">&rarr; passport-expiry-date-month</span></label>
+                <input type="text" id="expiryMonth" name="passport-expiry-date-month"
+                       placeholder="MM">
+            </div>
+            <div class="field">
+                <label for="expiryDay">Passport Expiry Day
+                    <span class="hint">&rarr; passport-expiry-date-day</span></label>
+                <input type="text" id="expiryDay" name="passport-expiry-date-day"
+                       placeholder="DD">
+            </div>
+            <div class="field">
+                <label for="expiryYear">Passport Expiry Year
+                    <span class="hint">&rarr; passport-expiry-date-year</span></label>
+                <input type="text" id="expiryYear" name="passport-expiry-date-year"
+                       placeholder="YYYY">
+            </div>
+        </div>
+
+        <button type="submit">Submit</button>
+        <button type="reset">Clear</button>
+    </form>
+
+    <script>
+        // Fake but format-valid passport profiles.
+        const profiles = [
+            {
+                // US: 9 digits
+                given: "John Michael",
+                middle: "Michael",
+                family: "Smith",
+                number: "538003821",
+                country: "United States of America",
+                issue: "2019-04-12",
+                expiry: "2029-04-11"
+            },
+            {
+                // Germany: letter + 8 alphanumeric (no I/O/0/1)
+                given: "Anna Maria",
+                middle: "Maria",
+                family: "Schmidt",
+                number: "C7TY29F84",
+                country: "Germany",
+                issue: "2021-08-30",
+                expiry: "2031-08-29"
+            },
+            {
+                // Canada: 2 letters + 6 digits
+                given: "Émilie Claire",
+                middle: "Claire",
+                family: "Tremblay",
+                number: "GA482157",
+                country: "Canada",
+                issue: "2020-11-05",
+                expiry: "2030-11-04"
+            }
+        ];
+
+        function fillCombined(i) {
+            const p = profiles[i];
+            document.getElementById("passportName").value = p.given + " " + p.family;
+            document.getElementById("passportNumber").value = p.number;
+            document.getElementById("passportCountry").value = p.country;
+            document.getElementById("passportIssueDate").value = p.issue;
+            document.getElementById("passportExpiryDate").value = p.expiry;
+        }
+
+        function fillSplit(i) {
+            const p = profiles[i];
+            const [iy, im, id] = p.issue.split("-");
+            const [ey, em, ed] = p.expiry.split("-");
+            document.getElementById("passportGivenName").value = p.given;
+            document.getElementById("passportAdditionalName").value = p.middle;
+            document.getElementById("passportFamilyName").value = p.family;
+            document.getElementById("passportNumberSplit").value = p.number;
+            document.getElementById("passportCountrySplit").value = p.country;
+            document.getElementById("issueMonth").value = im;
+            document.getElementById("issueDay").value = id;
+            document.getElementById("issueYear").value = iy;
+            document.getElementById("expiryMonth").value = em;
+            document.getElementById("expiryDay").value = ed;
+            document.getElementById("expiryYear").value = ey;
+        }
+    </script>
+
+</body>
+</html>
