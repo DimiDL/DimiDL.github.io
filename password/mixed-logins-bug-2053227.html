@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Autofill test: mixed logins (bug 2053227)</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.3rem; }
+    fieldset { margin: 1.2rem 0; padding: 1rem; border: 1px solid #ccc; border-radius: 8px; }
+    legend { font-weight: 600; }
+    label { display: block; margin: .5rem 0 .2rem; }
+    input { width: 100%; padding: .5rem; box-sizing: border-box; }
+    button { margin-top: .8rem; padding: .5rem 1rem; }
+    ol { background: #f6f6f6; padding: 1rem 1rem 1rem 2rem; border-radius: 8px; }
+    code { background: #eee; padding: 0 .25rem; border-radius: 3px; }
+    .state { color: #036; }
+  </style>
+</head>
+<body>
+  <h1>Chrome autofill test: one user+pass login + one password-only login</h1>
+
+  <p>
+    Reproduces the scenario from Firefox bug 2053227: the site has
+    <strong>two</strong> saved credentials for one origin &mdash; a normal
+    <em>username+password</em> login and a <em>password-only</em> login. The
+    question: with the normal login form below, does the browser silently
+    autofill on page load, or leave the fields blank until you pick from the
+    dropdown?
+  </p>
+
+  <ol>
+    <li>Host this over HTTPS (GitHub Pages works). Open it in Chrome with the
+      password manager enabled.</li>
+    <li>In <strong>Form A</strong>, enter username <code>firstuser@example.com</code>
+      and any password, click <em>Sign in</em>, and accept Chrome's
+      &ldquo;Save password?&rdquo; prompt. (This saves credential #1: user+pass.)</li>
+    <li>In <strong>Form B</strong> (no username field), enter any password,
+      click <em>Submit PIN</em>, and accept the save prompt. (This saves
+      credential #2: empty username.)</li>
+    <li><strong>Reload the page</strong> (or open it in a fresh tab).</li>
+    <li>Watch <strong>Form A</strong> <em>without clicking anything</em>: is the
+      username/password pre-filled on load, or blank? Then click the username
+      field to see the account dropdown.</li>
+  </ol>
+
+  <p class="state" id="state"></p>
+
+  <fieldset>
+    <legend>Form A &mdash; normal login (username + password)</legend>
+    <form method="get" action="?submittedA" autocomplete="on">
+      <label for="userA">Username</label>
+      <input type="text" id="userA" name="username" autocomplete="username">
+      <label for="passA">Password</label>
+      <input type="password" id="passA" name="password" autocomplete="current-password">
+      <button type="submit">Sign in</button>
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>Form B &mdash; password-only (PIN), used once to save the empty-username credential</legend>
+    <form method="get" action="?submittedB" autocomplete="on">
+      <label for="passB">PIN / password</label>
+      <input type="password" id="passB" name="password" autocomplete="current-password">
+      <button type="submit">Submit PIN</button>
+    </form>
+  </fieldset>
+
+  <script>
+    // Report, on load, what Form A's fields actually contain so you can see
+    // whether the browser autofilled before any user interaction.
+    addEventListener("load", () => {
+      const u = document.getElementById("userA").value;
+      const p = document.getElementById("passA").value;
+      document.getElementById("state").textContent =
+        `On load, Form A username = "${u}", password length = ${p.length}` +
+        (u || p ? "  → AUTOFILLED on load" : "  → left blank");
+    });
+  </script>
+</body>
+</html>
