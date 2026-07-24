@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triaged bugs</title>
+<style>
+
+:root{
+  --bg:#f6f7f9;--surface:#fff;--ink:#1b1f24;--muted:#6b7480;--line:#e4e7ec;--line-strong:#d3d8df;
+  --accent:#0b63ce;--accent-soft:#e7f0fb;
+  --defect:#c23b3b;--defect-soft:#fbe9e9;--enhancement:#7a4fd0;--enhancement-soft:#efe8fb;
+  --task:#3a7a4f;--task-soft:#e6f2ea;--unknown:#5b6470;--unknown-soft:#eceef1;
+  --reg:#b25a00;--reg-soft:#fbedd9;
+  --radius:12px;--shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.10);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0}
+a{color:var(--accent);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+.top{background:#0f1216;color:#fff;padding:12px 24px;display:flex;align-items:center;gap:16px}
+.top .brand{font-weight:700}.top .brand span{color:#8fb7f0}
+.top .top-meta{margin-left:auto;color:#8b95a3;font-size:12.5px}
+.hero{text-align:center;padding:30px 24px 18px;max-width:1240px;margin:0 auto}
+.hero h1{font-size:24px;letter-spacing:-.3px}
+.hero p{color:var(--muted);margin:8px 0 18px}
+.search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;padding:2px 14px;box-shadow:var(--shadow);max-width:640px;margin:0 auto}
+.search svg{flex:none;color:var(--muted)}
+.search input{border:0;outline:0;padding:14px 4px;font-size:16px;width:100%;background:transparent;color:var(--ink)}
+.layout{display:grid;grid-template-columns:210px minmax(0,1fr) 300px;gap:18px;align-items:start;max-width:1240px;margin:0 auto;padding:8px 24px 40px}
+.facets{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
+.facets .fh{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:800;margin:14px 0 6px}
+.facets .fh:first-child{margin-top:0}
+.chip{display:flex;justify-content:space-between;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:8px;padding:6px 9px;font-size:13px;color:var(--ink)}
+.chip:hover{background:#f2f5f9}
+.chip.on{background:var(--accent-soft);border-color:#bcd7f5;color:var(--accent);font-weight:700}
+.chip .c{color:var(--muted);font-size:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.p-head{padding:13px 18px;border-bottom:1px solid var(--line);font-weight:700;display:flex;align-items:center;gap:10px}
+.p-head .muted{color:var(--muted);font-weight:600;font-size:12px}
+.clearbtn{margin-left:auto;background:transparent;border:1px solid var(--line-strong);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--muted);font-weight:600}
+.clearbtn:hover{color:var(--ink)}
+.row{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--line);color:inherit}
+.row:last-child{border-bottom:0}.row:hover{background:#f9fbfe}
+.row .r-main{flex:1;min-width:0}
+.row .r-sum{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.row:hover .r-sum{color:var(--accent)}
+.row .r-meta{color:var(--muted);font-size:12px}
+.bugid{font-family:var(--mono);font-size:12px}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.t-defect{background:var(--defect-soft);color:var(--defect)}
+.t-enhancement{background:var(--enhancement-soft);color:var(--enhancement)}
+.t-task{background:var(--task-soft);color:var(--task)}
+.t-unknown{background:var(--unknown-soft);color:var(--unknown)}
+.reg-flag{display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:var(--reg);background:var(--reg-soft);padding:2px 8px;border-radius:999px}
+.empty{padding:44px;text-align:center;color:var(--muted)}
+.request{padding:18px}
+.request h3{font-size:15px;margin-bottom:4px}
+.request p{color:var(--muted);font-size:12.5px;margin:0 0 12px}
+.request textarea{width:100%;border:1px solid var(--line-strong);border-radius:9px;padding:11px;font-family:var(--mono);font-size:12.5px;min-height:96px;resize:vertical;color:var(--ink)}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:12px 16px;font-weight:700;font-size:13.5px;width:100%;margin-top:12px}
+.btn:disabled{background:#b8c2cf;cursor:not-allowed}
+.reqnote{margin-top:10px;font-size:12px;color:var(--reg);background:var(--reg-soft);border-radius:8px;padding:8px 10px}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Triage <span>Reports</span></div>
+  <div class="top-meta" id="top-meta"></div>
+</header>
+
+<div class="hero">
+  <h1>Find a triaged bug</h1>
+  <p>Search everything we've worked through, narrow by category, open the full report.</p>
+  <div class="search">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="q" placeholder="e.g. 1889321, autofill, credit card…" autocomplete="off">
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="facets" id="facets"></aside>
+  <section class="panel">
+    <div class="p-head">Results <span class="muted" id="count"></span>
+      <button class="clearbtn" id="clear" hidden>Clear filters</button></div>
+    <div id="rows"></div>
+  </section>
+  <aside class="panel">
+    <div class="p-head">Request triage</div>
+    <div class="request">
+      <h3>Missing a bug?</h3>
+      <p>Queue bugs we haven't triaged yet. Opens a pre-filled GitHub issue we pick up on the next run.</p>
+      <textarea id="req" placeholder="1889321, 1890044&#10;https://bugzil.la/1891002"></textarea>
+      <button class="btn" id="reqbtn">Request triage →</button>
+      <div class="reqnote" id="reqnote" hidden></div>
+    </div>
+  </aside>
+</div>
+
+<script>
+const BUGS = [{"id": 2052278, "summary": "Autocomplete now has 3 visual indicators to reflect focus-state (two backgrounds and one outline)", "type": "defect", "component": "Form Autofill", "regression": false, "filed": "2026-07-02T16:55:02Z", "url": "2052278.html"}, {"id": 2052146, "summary": "The payment methods/addresses form fields are not previewed upon hovering an autocomplete dropdown entry", "type": "defect", "component": "Form Autofill", "regression": false, "filed": "2026-07-02T11:03:35Z", "url": "2052146.html"}, {"id": 2046306, "summary": "Enhancement: Expand Form Autofill heuristics to recognize standard OpenCart field names (e.g., \"firstname\", \"lastname\")", "type": "enhancement", "component": "Form Autofill", "regression": false, "filed": "2026-06-10T06:19:41Z", "url": "2046306.html"}, {"id": 2042690, "summary": "Credit card saving fails on first entry in new profile", "type": "defect", "component": "Form Autofill", "regression": false, "filed": "2026-05-27T10:32:20Z", "url": "2042690.html"}, {"id": 2041933, "summary": "Stack overflow in txXPathOptimizer::optimize via deeply-nested XPath expression", "type": "defect", "component": "XSLT", "regression": false, "filed": "2026-05-23T16:18:36Z", "url": "2041933.html"}, {"id": 2041593, "summary": "Extra scrollbars appear in Text Recognition popup in RTL builds", "type": "defect", "component": "DOM: Core \u0026 HTML", "regression": false, "filed": "2026-05-22T07:37:00Z", "url": "2041593.html"}, {"id": 1931340, "summary": "reddit.com - autofill doesn't work with usernames", "type": "defect", "component": "Password Manager: Site Compatibility", "regression": false, "filed": "2024-11-14T14:46:10Z", "url": "1931340.html"}];
+const ISSUE_BASE = "https://github.com/DimiDL/DimiDL.github.io/issues/new";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+const filed = s => (s || '').slice(0, 10);
+const matchQ = (b, q) => { q = q.trim().toLowerCase(); if (!q) return true;
+  return String(b.id).includes(q) || b.summary.toLowerCase().includes(q) || b.component.toLowerCase().includes(q) || b.type.toLowerCase().includes(q); };
+
+// Multi-facet state: each facet holds a Set of selected values (OR within a
+// facet, AND across facets).
+const sel = { type: new Set(), reg: new Set(), comp: new Set() };
+const facetVal = { type: b => b.type, reg: b => (b.regression ? 'Regression' : 'Not a regression'), comp: b => b.component };
+
+function passesExcept(b, skip) {
+  return (skip === 'type' || !sel.type.size || sel.type.has(b.type))
+      && (skip === 'reg'  || !sel.reg.size  || sel.reg.has(facetVal.reg(b)))
+      && (skip === 'comp' || !sel.comp.size || sel.comp.has(b.component));
+}
+function results(q) { return BUGS.filter(b => matchQ(b, q) && passesExcept(b, null)); }
+
+function facetCounts(key) {
+  // Fixed totals over the whole dataset — the count next to each facet value is
+  // the total number of bugs with that value and never changes as you search or
+  // select. (It's an "how many exist" label, not "how many match right now".)
+  const counts = {};
+  BUGS.forEach(b => {
+    const v = facetVal[key](b); counts[v] = (counts[v] || 0) + 1;
+  });
+  return counts;
+}
+
+function facetBlock(title, key, orderedVals) {
+  const counts = facetCounts(key);
+  const vals = orderedVals || Object.keys(counts).sort();
+  const rowsHtml = vals.map(v => {
+    const on = sel[key].has(v);
+    const c = counts[v] || 0;
+    return `<button class="chip ${on ? 'on' : ''}" data-key="${key}" data-val="${esc(v)}">
+      <span>${esc(cap(v))}</span><span class="c">${c}</span></button>`;
+  }).join('');
+  return `<div class="fh">${title}</div>${rowsHtml}`;
+}
+
+function toggle(key, val) { sel[key].has(val) ? sel[key].delete(val) : sel[key].add(val); render(); }
+
+function clearAll() { sel.type.clear(); sel.reg.clear(); sel.comp.clear(); render(); }
+document.getElementById('clear').onclick = clearAll;
+
+function render() {
+  const q = document.getElementById('q').value;
+  const types = [...new Set(BUGS.map(b => b.type))].sort();
+  const comps = [...new Set(BUGS.map(b => b.component))].sort();
+  document.getElementById('facets').innerHTML =
+    facetBlock('Bug type', 'type', types) +
+    facetBlock('Regression', 'reg', ['Regression', 'Not a regression']) +
+    facetBlock('Component', 'comp', comps);
+
+  const rows = results(q);
+  document.getElementById('count').textContent = `${rows.length} of ${BUGS.length}`;
+  const anyFilter = sel.type.size || sel.reg.size || sel.comp.size;
+  document.getElementById('clear').hidden = !anyFilter;
+  document.getElementById('rows').innerHTML = rows.length ? rows.map(b => `
+    <a class="row" href="${esc(b.url)}">
+      <div class="r-main">
+        <div class="r-sum">${esc(b.summary)}</div>
+        <div class="r-meta"><span class="bugid">#${b.id}</span> · ${esc(b.component)} · ${filed(b.filed)}</div>
+      </div>
+      <span class="badge t-${esc(b.type)}">${esc(b.type)}</span>
+      ${b.regression ? '<span class="reg-flag">⚠ Reg</span>' : ''}
+    </a>`).join('') : `<div class="empty">${BUGS.length ? 'No bugs match your search and filters.' : 'No triaged bugs yet.'}</div>`;
+
+  document.getElementById('top-meta').textContent =
+    `${BUGS.length} triaged · ${BUGS.filter(b => b.type === 'defect').length} defects · ${BUGS.filter(b => b.regression).length} regressions`;
+}
+document.getElementById('q').addEventListener('input', render);
+// Delegated: chips are re-rendered on every filter change, so listen on the
+// stable container rather than binding each chip (also avoids attribute-quoting
+// bugs with component names that contain spaces/punctuation).
+document.getElementById('facets').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if (chip) toggle(chip.dataset.key, chip.dataset.val);
+});
+
+// ── Request triage → pre-filled GitHub issue ──────────────────────────────────
+function requestIds() {
+  return [...new Set((document.getElementById('req').value.match(/\b\d{5,}\b/g) || []))];
+}
+const reqbtn = document.getElementById('reqbtn');
+const reqnote = document.getElementById('reqnote');
+if (!ISSUE_BASE) {
+  reqbtn.disabled = true;
+  reqnote.hidden = false;
+  reqnote.textContent = 'Report repo not configured — request link unavailable.';
+} else {
+  reqbtn.onclick = () => {
+    const ids = requestIds();
+    if (!ids.length) { reqnote.hidden = false; reqnote.textContent = 'Enter one or more bug numbers first.'; return; }
+    const title = encodeURIComponent('Triage request: ' + ids.join(', '));
+    const body = encodeURIComponent('Please triage the following bugs:\n' + ids.map(i => '- bug ' + i).join('\n'));
+    // labels=triage-request — the batch poller keys off this label.
+    const url = ISSUE_BASE + '?title=' + title + '&labels=triage-request&body=' + body;
+    window.open(url, '_blank', 'noopener');
+  };
+}
+
+render();
+</script>
+</body>
+</html>
