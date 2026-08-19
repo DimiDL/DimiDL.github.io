@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D310625 — startup idle timing</title>
+<style>
+  :root{
+    --bg:#1b1e23;--panel:#24282f;--ink:#e8eaed;--muted:#9aa0a6;--grid:#3a3f47;--box:#2d323b;
+    --record:#4a2f2f;--recordline:#ff6b6b;--paint:#ff6b6b;--nopaint:#6ab0ff;--finished:#ffd166;
+    --ok:#3ddc97;--arrow:#5b6472;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);padding:32px;
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  h1{font-size:20px;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 22px;max-width:940px}
+  code{background:#000;padding:1px 5px;border-radius:4px;color:#d7dade;font-size:12px}
+
+  /* Path A/B trigger diagram */
+  .flow{background:var(--panel);border-radius:10px;padding:16px 20px;margin-bottom:22px}
+  .flow h3{margin:0 0 4px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .flow .intro{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .trunk{border-left:3px solid var(--muted);padding:4px 0 4px 14px;margin-bottom:6px}
+  .trunk .plabel{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:8px}
+  .forkline{color:var(--muted);font-size:12px;margin:0 0 8px 14px}
+  .path{border-left:3px solid var(--grid);padding:4px 0 4px 14px;margin:0 0 14px 28px}
+  .path.a{border-color:var(--ok)} .path.b{border-color:var(--recordline)}
+  .path .plabel{font-size:12.5px;font-weight:600;margin-bottom:8px}
+  .path.a .plabel{color:var(--ok)} .path.b .plabel{color:var(--recordline)}
+  .path .plabel .out{color:var(--muted);font-weight:400}
+  .race{color:var(--muted);font-size:13px;margin:2px 0 0} .race b{color:var(--ink)}
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .node{background:var(--box);border:1px solid var(--grid);border-radius:7px;padding:7px 11px;font-size:12.5px}
+  .node.hl{border-color:var(--finished)} .node.rec{border-color:var(--recordline)} .node.ours{border-color:var(--ok)}
+  .arrow{color:var(--arrow);font-size:16px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:0 0 18px;color:var(--muted);font-size:13px}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .d{width:13px;height:13px;border-radius:50%;display:inline-block;border:2px solid var(--bg)}
+  .d.paint{background:var(--nopaint)} .d.nopaint{background:var(--nopaint)} .d.fin{background:var(--finished)} .d.stop{background:var(--recordline)}
+  .d.neu{background:var(--nopaint)}
+  .capsw{width:18px;height:13px;border-radius:3px;background:var(--record);border:1px dashed var(--recordline);display:inline-block}
+
+  .panel{background:var(--panel);border-radius:10px;padding:16px 20px 18px;margin-bottom:16px}
+  .phead{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+  .phead h2{font-size:15px;margin:0}
+  .phead .q{color:var(--muted);font-size:12.5px}
+  .tag{font-size:12px;padding:2px 9px;border-radius:20px;font-weight:600;margin-left:auto}
+  .tag.bad{background:#4a2f2f;color:#ff9d9d} .tag.good{background:#204034;color:var(--ok)}
+
+  .grid{display:grid;grid-template-columns:130px 1fr;align-items:center}
+  .rlabel{font-size:11px;color:var(--muted);text-align:right;padding-right:12px;line-height:1.2}
+
+  /* scaled timeline */
+  .tl{position:relative;height:52px}
+  .tlband{position:absolute;top:8px;height:30px;background:var(--record);border-right:2px solid var(--recordline);border-radius:3px 0 0 3px}
+  .tllane{position:absolute;left:0;right:0;top:23px;height:1px;background:var(--grid)}
+  .m{position:absolute;top:23px;width:12px;height:12px;border-radius:50%;transform:translate(-50%,-50%);border:2px solid var(--panel);z-index:2}
+  .m.paint{background:var(--nopaint)} .m.nopaint{background:var(--nopaint)}
+  .m.fin{background:var(--finished);width:14px;height:14px;z-index:3}
+  .m.stop{background:var(--recordline);width:14px;height:14px;z-index:3}
+  .mlab{position:absolute;font-size:10px;transform:translateX(-50%);white-space:nowrap;z-index:2}
+  .mlab.fin{color:var(--finished);top:2px} .mlab.stop{color:#ffb3b3;font-weight:600}
+  .axis{position:relative;height:16px}
+  .tick{position:absolute;top:2px;font-size:10px;color:var(--muted);transform:translateX(-50%)}
+
+  /* queue snapshot */
+  .snap{margin-top:12px;background:#20242b;border:1px solid var(--grid);border-radius:8px;padding:9px 12px 11px}
+  .snaphead{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:9px}
+  .qline{display:flex;align-items:center;gap:8px;margin:5px 0;min-height:26px}
+  .qlab{width:128px;flex:none;text-align:right;font-size:11px;color:var(--muted);line-height:1.15}
+  .items{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .pill{padding:4px 8px;border-radius:6px;font-size:11.5px;background:var(--box);border:1px solid var(--grid);white-space:nowrap}
+  .pill.h2{border-color:var(--recordline);color:#ffb3b3;font-weight:600}
+  .pill.exec{border-color:var(--ok);color:var(--ok)}
+  .dim{color:var(--muted);font-size:11.5px}
+  .ar{color:var(--arrow);font-size:14px}
+  .subnote{font-size:11.5px;color:var(--muted);margin:6px 0 0 136px;line-height:1.35}
+  .subnote .items{vertical-align:middle}
+  .take{margin:9px 0 0 136px;font-size:12.5px;color:var(--ink)}
+  .take .k{color:var(--recordline);font-weight:600}
+  .take.good .k{color:var(--ok)}
+
+  .note{background:var(--panel);border-left:3px solid var(--muted);border-radius:10px;padding:12px 18px}
+  .note h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  .note p{margin:0;color:var(--muted);font-size:13px} .note b.a{color:var(--ok)} .note b.r{color:var(--recordline)}
+</style>
+</head>
+<body>
+  <h1>Bug 2052772 / D310625 — why the flicker recorder sees the per-window inits</h1>
+  <p class="sub">The recorder captures paints until it observes <code>browser-startup-idle-tasks-finished</code>.
+    That notify (<span style="color:var(--recordline)">&#9313;</span>) is the 2nd of two chained
+    <code>ChromeUtils.idleDispatch</code> hops. <b>Both <code>idleDispatch</code> and
+    <code>requestIdleCallback</code> feed the same main-thread idle queue at the same priority</b> &mdash; so what
+    matters is enqueue order. Timelines below are from real profiles (t=0 = <span style="color:var(--finished)">&#9312;</span>
+    finished task); each has a snapshot of that one idle queue at t=0.</p>
+
+  <div class="flow">
+    <h3>How the events get triggered</h3>
+    <p class="intro">Both chains start from the <b>same code path</b> &mdash; the first window's
+      <code>_delayedStartup()</code> &mdash; then fork and race.</p>
+    <div class="trunk">
+      <div class="plabel">Common origin</div>
+      <div class="chain">
+        <span class="node">window first paint <code>MozAfterPaint</code></span><span class="arrow">&rarr;</span>
+        <span class="node">gBrowserInit.<code>_delayedStartup()</code></span>
+      </div>
+    </div>
+    <div class="forkline">&#9500;&#9472; forks into two, inside <code>_delayedStartup()</code> &darr;</div>
+    <div class="path a">
+      <div class="plabel">Path A &mdash; schedules the per-window inits <span class="out">(line 763 &rarr; the init dots below; Origin did this inline with <code>requestIdleCallback</code>, the port routes it through <code>callModulesFromCategory</code>)</span></div>
+      <div class="chain">
+        <span class="node ours"><code>_schedulePerWindowIdleTasks()</code></span><span class="arrow">&rarr;</span>
+        <span class="node ours"><code>callModulesFromCategory("browser-window-idle-tasks", idleDispatch, idleDispatchWindow)</code></span><span class="arrow">&rarr;</span>
+        <span class="node ours">per-window inits run &amp; paint</span>
+      </div>
+    </div>
+    <div class="path b">
+      <div class="plabel">Path B &mdash; stops the recorder <span class="out">(line 769 &rarr; the &#9313; notify / stop marker below)</span></div>
+      <div class="chain">
+        <span class="node"><code>notifyObservers("browser-delayed-startup-finished")</code></span><span class="arrow">&rarr;</span>
+        <span class="node">BrowserGlue.<code>_onFirstWindowLoaded()</code></span><span class="arrow">&rarr;</span>
+        <span class="node"><code>_scheduleStartupIdleTasks()</code></span><span class="arrow">&rarr;</span>
+        <span class="node hl"><code>browser-startup-idle-tasks-finished</code> task <b>(&#9312;)</b></span><span class="arrow">&rarr;</span>
+        <span class="node hl">2&times; <code>ChromeUtils.idleDispatch</code> <b>(&#9313;)</b></span><span class="arrow">&rarr;</span>
+        <span class="node rec">StartupRecorder stops</span>
+      </div>
+    </div>
+    <p class="race">The race: if Path A's <b>paint-producing</b> inits fire <b>before</b> Path B's stop, their pixels
+      are captured &rarr; <b>flicker</b>. The only knob this patch changes is <b>how Path A enqueues onto the idle queue</b>.</p>
+  </div>
+
+  <div class="legend">
+    <span><span class="capsw"></span> recorder capture window (ends at &#9313;)</span>
+    <span><span class="d fin"></span> <code>ChromeUtils.idleDispatch</code> &#9312; / &#9313; executes</span>
+    <span><span class="d nopaint"></span> per-window init</span>
+  </div>
+
+  <div id="panels"></div>
+
+  <div class="note">
+    <h3>The whole difference &mdash; one queue, two ways to enqueue</h3>
+    <p><b class="r">Solution A</b> enqueues the inits as <b>10 direct <code>idleDispatch</code> callbacks</b>, ahead of
+      &#9313; &rarr; &#9313; waits for all of them (and their paints), stop at 187&nbsp;ms, every init captured.
+      <b class="a">Origin</b> and <b class="a">Solution B</b> enqueue them through the single
+      <b><code>requestIdleCallback</code> executor</b>, which runs <b>one callback per turn then re-queues itself at
+      the tail</b> &rarr; &#9313; gets a slot after just one init (stop 33 / 53&nbsp;ms) and the paint-producing
+      inits run afterwards. Same queue, same priority &mdash; only the enqueue shape differs.</p>
+  </div>
+
+<script>
+const T=200, px=t=>Math.max(0,Math.min(t,T))/T*100;
+const dotspan=(n,kind)=>Array.from({length:n}).map(()=>`<span class="d ${kind}"></span>`).join("");
+
+const V=[
+ { name:"ORIGIN", q:"inits via requestIdleCallback (inline)", good:true, tag:"no flicker",
+   stop:32, band:32,
+   inits:{dots:[[0,'nopaint'],[32.3,'nopaint'],[32.6,'nopaint'],[33.4,'nopaint'],[33.8,'nopaint'],[45.2,'nopaint'],[69.8,'nopaint'],[70.3,'nopaint'],[96,'nopaint']]},
+   queue:[{exec:1},{arrow:1},{hop2:1}],
+   execList:[{n:10,kind:'neu'}], execNote:"unmarked in old code; shown for structure",
+   take:"Only the executor sits before &#9313; &rarr; &#9313; runs right after &#9312;, recorder stops at <span class='k'>33&nbsp;ms</span>; inits paint later." },
+
+ { name:"SOLUTION A", q:"inits via ChromeUtils.idleDispatch", good:false, tag:"flicker",
+   stop:187, band:187,
+   inits:{dots:[[0,'nopaint'],[0.6,'nopaint'],[0.6,'nopaint'],[0.8,'nopaint'],[1.3,'nopaint'],
+                [17.8,'paint'],[18.1,'paint'],[18.2,'paint'],[18.2,'paint'],[21.4,'paint']]},
+   queue:[{dots:10,kind:'neu'},{arrow:1},{hop2:1}],
+   execList:null,
+   take:"&#9313; waits behind all 10 inits (and their paints) &rarr; recorder stops at <span class='k'>187&nbsp;ms</span>, capturing them." },
+
+ { name:"SOLUTION B", q:"inits via requestIdleCallback (idleDispatchWindow)", good:true, tag:"no flicker",
+   stop:53, band:53,
+   inits:{dots:[[0,'nopaint'],[53.8,'nopaint'],[54.4,'nopaint'],[55.2,'nopaint'],[56.6,'nopaint'],
+                [69.8,'paint'],[71.3,'paint'],[71.3,'paint'],[74.1,'paint'],[80.2,'paint']]},
+   queue:[{exec:1},{arrow:1},{hop2:1}],
+   execList:[{n:10,kind:'neu'}],
+   take:"&#9313; only waits behind one executor turn &rarr; recorder stops at <span class='k'>53&nbsp;ms</span>; the paint-producing inits run after." },
+];
+
+function timeline(v){
+  let dots="";
+  if(v.inits.dots){
+    dots=v.inits.dots.map(([t,k])=>`<div class="m ${k}" style="left:${px(t)}%" title="${t}ms"></div>`).join("");
+  }
+  const ticks=[0,25,50,75,100,125,150,175,200].map(x=>`<div class="tick" style="left:${px(x)}%">${x}</div>`).join("");
+  return `
+    <div class="grid">
+      <div class="rlabel">timeline<br>(ms, real)</div>
+      <div>
+        <div class="tl">
+          <div class="tlband" style="left:0;width:${px(v.band)}%"></div>
+          <div class="tllane"></div>
+          <div class="m fin" style="left:${px(0)}%"></div>
+          <div class="mlab fin" style="left:${px(0)}%">&#9312; idleDispatch</div>
+          ${dots}
+          <div class="m fin" style="left:${px(v.stop)}%"></div>
+          <div class="mlab fin" style="left:${px(v.stop)}%;top:2px">&#9313; idleDispatch ${v.stop}ms</div>
+          <div class="mlab stop" style="left:${px(v.stop)}%;top:38px">recorder stops</div>
+        </div>
+        <div class="axis">${ticks}<div class="tick" style="left:100%">ms</div></div>
+      </div>
+    </div>`;
+}
+
+function qitems(arr){
+  return arr.map(it=>{
+    if(it.hop2) return `<span class="pill h2">idleDispatch &#9313; &rarr; notify = stop</span>`;
+    if(it.exec) return `<span class="pill exec">requestIdleCallback executor &#8635;</span>`;
+    if(it.arrow) return `<span class="ar">&rarr;</span>`;
+    if(it.dots) return `<span class="items">${dotspan(it.dots,it.kind)}</span>`;
+    return "";
+  }).join("");
+}
+
+function execRow(v){
+  let content;
+  if(v.execList===null){
+    content=`<span class="dim">not used &mdash; inits are enqueued directly on the idle queue above</span>`;
+  } else {
+    const note=v.execNote?`<span class="dim">&nbsp;(${v.execNote})</span>`:"";
+    content=`<span class="items">`+v.execList.map(g=>dotspan(g.n,g.kind)).join("")+`</span>`
+      +`<span class="dim">&nbsp;runs one per turn, re-queues at tail &#8635;</span>`+note;
+  }
+  return `<div class="qline"><span class="qlab">requestIdleCallback<br>executor &mdash; its list</span><span class="items">${content}</span></div>`;
+}
+
+function snapshot(v){
+  return `
+    <div class="snap">
+      <div class="snaphead">one main-thread idle queue at t=0 &mdash; front &rarr; back (&#9312; already ran and enqueued &#9313;)</div>
+      <div class="qline"><span class="qlab">idle queue</span><span class="items">${qitems(v.queue)}</span></div>
+      ${execRow(v)}
+      <div class="take ${v.good?'good':''}">${v.take}</div>
+    </div>`;
+}
+
+function panel(v){
+  return `
+  <div class="panel">
+    <div class="phead"><h2>${v.name}</h2><span class="q">${v.q}</span><span class="tag ${v.good?'good':'bad'}">${v.tag}</span></div>
+    ${timeline(v)}
+    ${snapshot(v)}
+  </div>`;
+}
+
+document.getElementById("panels").innerHTML=V.map(panel).join("");
+</script>
+</body>
+</html>
