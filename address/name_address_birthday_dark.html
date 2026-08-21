@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — Dark Card</title>
+    <style>
+        :root {
+            --bg: #0f1115;
+            --card: #1a1d24;
+            --border: #2a2f3a;
+            --text: #e6e6e6;
+            --muted: #8b93a7;
+            --accent: #7c5cff;
+            --accent-hover: #6a4aff;
+            --input-bg: #11141a;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, #1c1f2a, var(--bg));
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+        form {
+            width: 100%;
+            max-width: 640px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px 32px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+        }
+        h1 {
+            font-size: 1.4em;
+            margin: 0 0 4px;
+            letter-spacing: 0.2px;
+        }
+        .subtitle {
+            color: var(--muted);
+            font-size: 0.9em;
+            margin-bottom: 24px;
+        }
+        fieldset {
+            border: none;
+            padding: 0;
+            margin: 0 0 22px;
+        }
+        legend {
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            margin-bottom: 12px;
+            padding: 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .grid.three { grid-template-columns: 1fr 1fr 1fr; }
+        .full { grid-column: 1 / -1; }
+        .field { display: flex; flex-direction: column; }
+        label {
+            font-size: 0.78em;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        input, select {
+            background: var(--input-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 11px 12px;
+            font-size: 0.95em;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.25);
+        }
+        input::placeholder { color: #4b5263; }
+        button {
+            width: 100%;
+            margin-top: 8px;
+            padding: 13px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        button:hover { background: var(--accent-hover); }
+        @media (max-width: 480px) {
+            .grid, .grid.three { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <form id="profileForm" action="/submit" method="POST" autocomplete="on">
+        <h1>Create Your Profile</h1>
+        <p class="subtitle">Tell us a bit about yourself.</p>
+
+        <fieldset>
+            <legend>Identity</legend>
+            <div class="grid">
+                <div class="field">
+                    <label for="givenName">First name</label>
+                    <input type="text" id="givenName" name="given-name" autocomplete="given-name" placeholder="Ada" required>
+                </div>
+                <div class="field">
+                    <label for="familyName">Last name</label>
+                    <input type="text" id="familyName" name="family-name" autocomplete="family-name" placeholder="Lovelace" required>
+                </div>
+                <div class="field full">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Where you live</legend>
+            <div class="grid">
+                <div class="field full">
+                    <label for="addressLine1">Street address</label>
+                    <input type="text" id="addressLine1" name="address-line1" autocomplete="address-line1" placeholder="123 Main St" required>
+                </div>
+                <div class="field full">
+                    <label for="addressLine2">Apt, suite, etc. (optional)</label>
+                    <input type="text" id="addressLine2" name="address-line2" autocomplete="address-line2" placeholder="Apt 4B">
+                </div>
+                <div class="field">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="address-level2" autocomplete="address-level2" required>
+                </div>
+                <div class="field">
+                    <label for="state">State / Region</label>
+                    <input type="text" id="state" name="address-level1" autocomplete="address-level1" required>
+                </div>
+                <div class="field">
+                    <label for="postalCode">Postal code</label>
+                    <input type="text" id="postalCode" name="postal-code" autocomplete="postal-code" required>
+                </div>
+                <div class="field">
+                    <label for="country">Country</label>
+                    <input type="text" id="country" name="country-name" autocomplete="country-name" required>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Birthday</legend>
+            <div class="grid three">
+                <div class="field">
+                    <label for="bdayMonth">Month</label>
+                    <input type="number" id="bdayMonth" name="bday-month" autocomplete="bday-month" min="1" max="12" placeholder="MM">
+                </div>
+                <div class="field">
+                    <label for="bdayDay">Day</label>
+                    <input type="number" id="bdayDay" name="bday-day" autocomplete="bday-day" min="1" max="31" placeholder="DD">
+                </div>
+                <div class="field">
+                    <label for="bdayYear">Year</label>
+                    <input type="number" id="bdayYear" name="bday-year" autocomplete="bday-year" min="1900" max="2100" placeholder="YYYY">
+                </div>
+                <div class="field full">
+                    <label for="bday">Or pick a date</label>
+                    <input type="date" id="bday" name="bday" autocomplete="bday">
+                </div>
+            </div>
+        </fieldset>
+
+        <button type="submit">Save profile</button>
+    </form>
+</body>
+</html>
