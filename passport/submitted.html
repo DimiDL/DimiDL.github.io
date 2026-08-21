@@ -54,10 +54,19 @@
                 <tr><th>Date of Expiry</th><td id="v-expiry-date"></td></tr>
             </tbody>
         </table>
-        <a class="back" href="passport_basic.html">&#8592; Back to form</a>
+        <a class="back" id="back-link" href="passport_basic.html">&#8592; Back to form</a>
     </div>
 
     <script>
+        // Point the "Back to form" link at whichever form submitted this page.
+        const knownForms = ["passport_basic.html", "passport_all_fields.html"];
+        if (document.referrer) {
+            const referrerPage = new URL(document.referrer).pathname.split("/").pop();
+            if (knownForms.includes(referrerPage)) {
+                document.getElementById("back-link").href = referrerPage;
+            }
+        }
+
         const params = new URLSearchParams(window.location.search);
         const fields = ["passport-name", "passport-number", "passport-country", "issue-date", "expiry-date"];
         for (const field of fields) {
