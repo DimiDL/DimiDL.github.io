@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bug 2064781 - ML root cause: int8 saturation in the Fx154 autofill classifier</title>
+<style>
+  :root {
+    color-scheme: light;
+    --plane:          #f9f9f7;
+    --surface-1:      #fcfcfb;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --grid:           #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --series-1:       #2a78d6;
+    --series-2:       #eb6834;
+    --series-3:       #1baf7a;
+    --critical:       #d03b3b;
+    --good:           #006300;
+    --code-bg:        #f2f1ed;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --plane:          #0d0d0d;
+      --surface-1:      #1a1a19;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --grid:           #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --series-1:       #3987e5;
+      --series-2:       #d95926;
+      --series-3:       #199e70;
+      --critical:       #d03b3b;
+      --good:           #0ca30c;
+      --code-bg:        #232322;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --plane:          #0d0d0d;
+    --surface-1:      #1a1a19;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --grid:           #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --series-1:       #3987e5;
+    --series-2:       #d95926;
+    --series-3:       #199e70;
+    --critical:       #d03b3b;
+    --good:           #0ca30c;
+    --code-bg:        #232322;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--plane);
+    color: var(--text-primary);
+    font: 16px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  header.masthead { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 40px; }
+  .eyebrow { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+  h1 { font-size: 30px; line-height: 1.25; margin: 12px 0 14px; font-weight: 650; letter-spacing: -0.015em; }
+  .standfirst { font-size: 17px; color: var(--text-secondary); margin: 0; max-width: 68ch; }
+  .meta { margin-top: 18px; font-size: 13px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 6px 20px; }
+
+  h2 { font-size: 20px; margin: 52px 0 14px; font-weight: 650; letter-spacing: -0.01em; }
+  h3 { font-size: 15px; margin: 30px 0 10px; font-weight: 650; color: var(--text-primary); }
+  p  { margin: 0 0 14px; max-width: 74ch; }
+  ul, ol { max-width: 74ch; padding-left: 22px; }
+  li { margin-bottom: 7px; }
+  a { color: var(--series-1); }
+
+  code, .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.885em;
+  }
+  :not(pre) > code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 0 0 18px;
+  }
+
+  /* ---- stat tiles ---- */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); gap: 12px; margin: 28px 0 8px; }
+  .tile {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px;
+  }
+  .tile .label { font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; }
+  .tile .value { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; margin-top: 6px; line-height: 1.1; }
+  .tile .sub { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+
+  /* ---- figures & charts ---- */
+  figure {
+    margin: 26px 0; background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 22px 16px;
+  }
+  .fig-title { font-size: 14.5px; font-weight: 650; margin-bottom: 3px; }
+  .fig-sub { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 16px; }
+  figcaption { font-size: 12.5px; color: var(--text-secondary); margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--grid); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 16px; font-size: 12.5px; color: var(--text-secondary); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+
+  .grouped { display: grid; gap: 14px; }
+  .grow { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: center; }
+  .grow .cat { font-size: 12.5px; color: var(--text-secondary); text-align: right; }
+  .bars { display: grid; gap: 2px; }
+  .barline { display: flex; align-items: center; gap: 8px; }
+  .track { flex: 1; position: relative; height: 15px; }
+  .bar {
+    height: 15px; border-radius: 0 4px 4px 0; min-width: 2px;
+    transition: filter .12s ease;
+  }
+  .bar:hover { filter: brightness(1.12); cursor: default; }
+  .val { font-size: 11.5px; color: var(--text-secondary); font-variant-numeric: tabular-nums; min-width: 62px; }
+
+  .axis { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--baseline); display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+  /* single-series big bars */
+  .solo { display: grid; gap: 12px; }
+  .solorow { display: grid; grid-template-columns: 172px 1fr; gap: 14px; align-items: center; }
+  .solorow .cat { font-size: 13px; color: var(--text-secondary); text-align: right; }
+  .solobar { height: 26px; border-radius: 0 4px 4px 0; }
+  .solobar[data-zero="1"] { display: none; }
+  .solowrap { display: flex; align-items: center; gap: 10px; }
+  .soloval { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text-primary); white-space: nowrap; }
+
+  details.datatable { margin-top: 12px; font-size: 12.5px; }
+  details.datatable summary { cursor: pointer; color: var(--text-secondary); }
+  details.datatable table { margin-top: 10px; }
+
+  /* ---- tables ---- */
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 0 0 18px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+  th { font-weight: 650; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .tablecard { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 6px 8px; margin: 20px 0; overflow-x: auto; }
+
+  .flip { color: var(--critical); font-weight: 600; }
+  .ok   { color: var(--good); font-weight: 600; }
+
+  .callout {
+    border-left: 3px solid var(--series-1); background: var(--surface-1);
+    border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 22px 0;
+  }
+  .callout.warn { border-left-color: var(--critical); }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .k { font-weight: 650; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-secondary); display: block; margin-bottom: 6px; }
+
+  #tt {
+    position: fixed; pointer-events: none; opacity: 0; transition: opacity .1s;
+    background: var(--text-primary); color: var(--surface-1);
+    font-size: 12px; padding: 6px 9px; border-radius: 6px; white-space: nowrap; z-index: 50;
+  }
+  .themebtn {
+    position: fixed; top: 14px; right: 14px; z-index: 40;
+    background: var(--surface-1); color: var(--text-secondary);
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 6px 11px; font: inherit; font-size: 12px; cursor: pointer;
+  }
+  @media print { .themebtn { display: none; } }
+</style>
+</head>
+<body>
+<button class="themebtn" id="themebtn" type="button">Toggle theme</button>
+<div id="tt" role="status" aria-live="off"></div>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">Bug 2064781 &middot; Toolkit :: Form Autofill &middot; ML mechanism</div>
+  <h1>Address autofill fails on Firefox 154 because the shipped int8 classifier overflows ONNX Runtime's AVX2 accumulator</h1>
+  <p class="standfirst">
+    Firefox 154 enabled ML address-field detection for all desktop channels and switched the classifier to an
+    int8-quantized build. That build uses per-channel weight quantization, which is the recommended practice
+    but is unsafe on x86-64 CPUs with AVX2 and without VNNI. On those machines the int16 accumulation inside
+    ONNX Runtime's u8s8 kernel saturates, the model collapses onto a single dominant label, and no address
+    section is ever formed.
+  </p>
+  <div class="meta">
+    <span>Prepared 2026-08-21</span>
+    <span>Affected: Firefox 154 desktop, x86-64 without VNNI</span>
+    <span>Confidence: high on mechanism, pending hardware confirmation</span>
+  </div>
+</header>
+
+<div class="tiles">
+  <div class="tile">
+    <div class="label">Saturating int16 pairs per inference, shipped model</div>
+    <div class="value">218,167</div>
+    <div class="sub">v0.2.0 q8, one 6-field form</div>
+  </div>
+  <div class="tile">
+    <div class="label">Same measurement, previous model</div>
+    <div class="value">205</div>
+    <div class="sub">v0.1.0 q8 &mdash; 1,064x fewer</div>
+  </div>
+  <div class="tile">
+    <div class="label">Address fields misclassified under emulation</div>
+    <div class="value">5 of 6</div>
+    <div class="sub">0 of 6 on arm64</div>
+  </div>
+  <div class="tile">
+    <div class="label">Saturating pairs after the proposed fix</div>
+    <div class="value">0</div>
+    <div class="sub">reduce_range, safe by construction</div>
+  </div>
+</div>
+
+<h2>1. What changed in Firefox 154</h2>
+
+<p>
+  Bug 2052140 (<code>e1a3d03</code>, landed 2026-07-03, first shipped in 154) made three changes to
+  <code>FormAutofillML.sys.mjs</code> at once:
+</p>
+
+<div class="tablecard">
+<table>
+  <thead>
+    <tr><th>Property</th><th>Firefox 153 (Nightly only)</th><th>Firefox 154 (all desktop)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>extensions.formautofill.useml</code></td><td>Nightly only</td><td>All desktop channels</td></tr>
+    <tr><td>Model revision</td><td><code>v0.1.0</code></td><td><code>v0.2.0</code></td></tr>
+    <tr><td>Precision</td><td><code>dtype: "fp32"</code> pinned in-tree</td><td>Pin removed; <code>dtype: "q8"</code> from Remote Settings</td></tr>
+    <tr><td>Backend</td><td><code>onnx-native</code> + wasm fallback</td><td><code>best-onnx</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>
+  The live Remote Settings record for <code>formfill-classification</code> in
+  <code>main/ml-inference-options</code> sets <code>dtype: "q8"</code> explicitly, on
+  <code>mozilla/tinybert-address-autofill</code> revision <code>v0.2.0</code>. This was a deliberate
+  configuration, not a missing field.
+</p>
+
+<div class="callout warn">
+  <span class="k">Important constraint on any fix</span>
+  <p>
+    <code>v0.2.0</code> ships <strong>only</strong> <code>onnx/model_quantized.onnx</code> on model-hub.
+    <code>onnx/model.onnx</code> returns 404. Pinning <code>dtype: "fp32"</code> &mdash; either in-tree or by
+    editing the Remote Settings record &mdash; would fail engine creation outright rather than fix anything.
+  </p>
+</div>
+
+<h2>2. Observed symptom</h2>
+
+<p>
+  Both reporters run 154.0, buildID <code>20260812182057</code>, Windows x86-64, with
+  <code>useml.successful = true</code> and <code>useml.nativeOnnxAvailable = true</code>. The autofill
+  devtools panel shows <code>reason: ml</code> on every address field, so inference ran and returned; it did
+  not time out or throw. Every label it produced was either <code>other</code> or <code>address-level2</code>
+  &mdash; including on a phone field and a password field.
+</p>
+
+<p>
+  A model that is merely inaccurate spreads its errors around. This one had collapsed onto a single class,
+  which is the signature of input that is off the distribution the classifier was fitted on.
+</p>
+
+<h2>3. Reproduction with the shipped artifacts</h2>
+
+<p>
+  The 154 token strings (<code>mlData</code>) for <code>dimidl.github.io/signup/test.html</code> were
+  regenerated by running the release-branch <code>tokenizeElements</code> implementation against the page's
+  markup, then fed to the real <code>v0.2.0</code> quantized model downloaded from model-hub.
+</p>
+
+<div class="tablecard">
+<table>
+  <thead>
+    <tr><th>Configuration</th><th>Result on the six address fields</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>v0.2.0 q8, arm64 (exact arithmetic)</td><td class="ok">All 6 correct</td></tr>
+    <tr><td>v0.2.0 q8, batched vs per-field inference</td><td>Identical &mdash; rules out the Bug 2048362 batching change</td></tr>
+    <tr><td>v0.2.0 q8, AVX2-without-VNNI emulated</td><td class="flip">5 of 6 wrong &mdash; matches the reporter field for field</td></tr>
+    <tr><td>v0.1.0 q8, same emulation</td><td class="ok">All 6 correct &mdash; unaffected</td></tr>
+    <tr><td>v0.1.0 fp32 (the 153 configuration)</td><td class="ok">No <code>MatMulInteger</code> nodes at all &mdash; immune by construction</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Emulated output against the reporter's devtools panel</h3>
+
+<div class="tablecard">
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Exact (arm64 / VNNI)</th>
+      <th>AVX2-no-VNNI emulated</th>
+      <th>Reporter, Fx154 x86 Windows</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>full-name</code></td><td>name (0.94)</td><td class="flip">other (0.92)</td><td>no label, reason ml</td></tr>
+    <tr><td><code>email</code></td><td>email (0.99)</td><td class="flip">other (0.99)</td><td>email &mdash; caught by <code>type="email"</code> before ML</td></tr>
+    <tr><td><code>phone</code></td><td>tel (0.96)</td><td class="flip">other (0.66)</td><td>no label, reason ml</td></tr>
+    <tr><td><code>address</code></td><td>address-line1 (0.61)</td><td class="flip">address-level2 (0.73)</td><td>address-level2, reason ml</td></tr>
+    <tr><td><code>city</code></td><td>address-level2 (0.99)</td><td>address-level2 (0.96)</td><td>address-level2, reason ml</td></tr>
+    <tr><td><code>zip</code></td><td>postal-code (0.99)</td><td class="flip">other (0.72)</td><td>no label, reason ml</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>
+  Six of six agree, including the distinctive pairing of <code>address</code> and <code>city</code> both
+  landing on <code>address-level2</code> while name, phone and ZIP land on <code>other</code>.
+</p>
+
+<h2>4. The mechanism</h2>
+
+<h3>4.1 How ONNX Runtime multiplies on pre-VNNI x86</h3>
+
+<p>
+  Both revisions are quantized u8s8: uint8 activations times int8 weights, through 26
+  <code>MatMulInteger</code> nodes, weights spanning the full int8 range and no <code>reduce_range</code>
+  applied. On x86-64 with AVX2 but without VNNI, ONNX Runtime's MLAS kernel has no dot-product instruction
+  available, so it uses <code>VPMADDUBSW</code>, which multiplies two adjacent operand pairs and sums them
+  <strong>into int16</strong> before <code>VPMADDWD</code> widens to int32.
+</p>
+
+<pre>a[k]   * b[k]        max 255 x 127 =  32,385     <span style="color:var(--text-muted)">// one product nearly fills int16</span>
+a[k+1] * b[k+1]      max 255 x 127 =  32,385
+             sum                   =  64,770  &gt;  32,767  <span style="color:var(--text-muted)">// saturates, silently</span></pre>
+
+<p>
+  Two details make this worse than it looks. The kernel multiplies the <strong>raw activation byte</strong>,
+  before any zero-point correction &mdash; and the measured zero points in this model are 127 to 215, so the
+  mean activation byte is 129 to 215. It is never small. And saturation <em>clips</em> rather than wraps, so
+  the error is systematic: it always shrinks the largest partial sums, which are exactly the ones carrying
+  the signal.
+</p>
+
+<h3>4.2 Why v0.2.0 and not v0.1.0: per-channel weight scales</h3>
+
+<p>
+  The two revisions have the same architecture (BERT, 4 layers, hidden 312, 66 labels) and the same
+  u8s8 scheme. The difference is the granularity of the weight scale.
+</p>
+
+<div class="tablecard">
+<table>
+  <thead>
+    <tr><th></th><th>v0.1.0</th><th>v0.2.0 (shipped in 154)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Weight scale shape</td><td><code>()</code> scalar &mdash; <strong>per-tensor</strong></td><td><code>(312,)</code> / <code>(1200,)</code> / <code>(66,)</code> &mdash; <strong>per-channel</strong></td></tr>
+    <tr><td>Weights at exactly &plusmn;127</td><td class="num">0.00%</td><td class="num">0.33% in every matrix (= 1/312)</td></tr>
+    <tr><td>Weights with |w| &ge; 100</td><td class="num">~0%</td><td class="num">0.9% &ndash; 2.6%</td></tr>
+    <tr><td>Mean |w|, first attention matmul</td><td class="num">1.5</td><td class="num">12.0</td></tr>
+    <tr><td>Mean |w|, layer-0 FFN intermediate</td><td class="num">2.6</td><td class="num">24.9</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>
+  With one scale for the whole matrix, only the single global maximum weight reaches &plusmn;127 and
+  everything else is squashed small. With a scale per output column, <em>every column</em> maps its own
+  maximum to &plusmn;127, so full-scale weights are spread uniformly through all 26 matrices and the typical
+  magnitude rises roughly eight to ten times.
+</p>
+
+<figure>
+  <div class="fig-title">Mean absolute int8 weight, by quantized matmul</div>
+  <div class="fig-sub">Higher means larger typical products entering the int16 accumulator. Selected nodes; all 26 follow the same pattern.</div>
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--series-1)"></i>v0.1.0 &mdash; per-tensor</span>
+    <span><i class="swatch" style="background:var(--series-2)"></i>v0.2.0 &mdash; per-channel</span>
+  </div>
+  <div class="grouped" id="chartA"></div>
+  <div class="axis"><span>0</span><span>40</span></div>
+  <figcaption>
+    Nodes are indexed in graph order: mmi[00] is the layer-0 query projection, mmi[04] the layer-0
+    feed-forward intermediate, mmi[24] the pooler and mmi[25] the classifier. Measured directly from the
+    <code>MatMulInteger</code> weight initializers of each downloaded model.
+  </figcaption>
+  <details class="datatable">
+    <summary>Data table</summary>
+    <table>
+      <thead><tr><th>Node</th><th class="num">v0.1.0</th><th class="num">v0.2.0</th></tr></thead>
+      <tbody id="tableA"></tbody>
+    </table>
+  </details>
+</figure>
+
+<figure>
+  <div class="fig-title">Saturating int16 accumulations per inference</div>
+  <div class="fig-sub">Adjacent-pair products exceeding the int16 range during one classification of the six-field form.</div>
+  <div class="solo" id="chartB"></div>
+  <figcaption>
+    Out of 437,413,392 adjacent-pair accumulations in total. The absolute rate is only 0.05 percent, but the
+    errors land on the highest-magnitude contributions and compound across 26 layers.
+  </figcaption>
+  <details class="datatable">
+    <summary>Data table</summary>
+    <table>
+      <thead><tr><th>Configuration</th><th class="num">Saturating pairs</th><th class="num">Share of all pairs</th></tr></thead>
+      <tbody id="tableB"></tbody>
+    </table>
+  </details>
+</figure>
+
+<h3>4.3 Why the collapse is total rather than noisy</h3>
+
+<p>
+  The final classifier matmul alone, given exact upstream activations, shifts logits by at most
+  <strong>0.31</strong> and flips nothing. A single-layer analysis would have cleared this model. It is the
+  compounding through all 26 quantized matmuls that does the damage: each one sheds a little of its strongest
+  activations, the representation drifts off distribution, and the classifier falls back to its prior. That
+  prior is <code>other</code>, with <code>address-level2</code> as the most frequent non-<code>other</code>
+  class &mdash; which is exactly the observed output.
+</p>
+
+<div class="callout">
+  <span class="k">Root cause, stated once</span>
+  <p>
+    Firefox 154 shipped <code>tinybert-address-autofill</code> v0.2.0 as an int8 u8s8 model with
+    <strong>per-channel weight scales and no <code>reduce_range</code></strong>. On x86-64 with AVX2 and
+    without VNNI, ONNX Runtime accumulates adjacent products into int16 before widening, and per-channel
+    scaling puts enough full-scale &plusmn;127 weights into every matrix that this accumulator saturates.
+    The clipping error is systematic, compounds across 26 layers, and pushes the classifier off distribution
+    so that it emits <code>other</code> or <code>address-level2</code> for nearly every field.
+  </p>
+</div>
+
+<h2>5. The fix</h2>
+
+<h3>Verified: re-export with reduce_range</h3>
+
+<p>
+  <code>reduce_range=True</code> quantizes weights to 7 bits, bounding them to &plusmn;64 while keeping
+  per-channel scaling. That caps a pair at 2 &times; 255 &times; 64 = 32,640, below the 32,767 limit, so
+  saturation becomes <strong>impossible by construction</strong> rather than merely unlikely.
+</p>
+
+<p>
+  This was tested by rebuilding v0.2.0 with 7-bit weights &mdash; halving the int8 weights and doubling the
+  per-channel scales &mdash; and re-running the same emulation:
+</p>
+
+<div class="tablecard">
+<table>
+  <thead>
+    <tr><th>Field</th><th>Exact (arm64 / VNNI)</th><th>AVX2-no-VNNI emulated, after fix</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>full-name</code></td><td>name (0.95)</td><td class="ok">name (0.95)</td></tr>
+    <tr><td><code>email</code></td><td>email (0.98)</td><td class="ok">email (0.98)</td></tr>
+    <tr><td><code>phone</code></td><td>tel (0.95)</td><td class="ok">tel (0.95)</td></tr>
+    <tr><td><code>address</code></td><td>address-line1 (0.70)</td><td class="ok">address-line1 (0.70)</td></tr>
+    <tr><td><code>city</code></td><td>address-level2 (0.99)</td><td class="ok">address-level2 (0.99)</td></tr>
+    <tr><td><code>zip</code></td><td>postal-code (0.98)</td><td class="ok">postal-code (0.98)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>
+  Zero saturating pairs, and the emulated output is <em>identical</em> to the exact output rather than merely
+  close. On this form the one-bit precision loss cost nothing measurable; confidence rose slightly
+  (name 0.94 to 0.95, address-line1 0.61 to 0.70). That is six fields on one page, not an accuracy
+  benchmark &mdash; the re-export still needs validating against the real evaluation set.
+</p>
+
+<p>
+  The test approximated <code>reduce_range</code> by halving already-quantized weights. A true re-export from
+  the fp32 source will be at least as good, because it re-derives each scale from the original weights rather
+  than inheriting a second rounding.
+</p>
+
+<h2>6. What is not yet proven</h2>
+
+<ul>
+  <li>
+    <strong>This is an emulation of the MLAS kernel, not a run on real AVX2 hardware.</strong> It models
+    adjacent-k pairing with int16 saturation. The field-for-field agreement with the reporter is strong, but
+    the decisive test is running v0.2.0 q8 on a pre-VNNI x86 machine.
+  </li>
+  <li>
+    <strong>The vendored runtime has not been inspected.</strong> Firefox's native ONNX runtime under
+    <code>dom/onnx</code> is assumed to use the MLAS u8s8 AVX2 path. Very likely, not confirmed.
+  </li>
+  <li>
+    <strong>The wasm backend is unchecked.</strong> If ORT-web does not saturate the same way, users without
+    native ONNX are unaffected, which narrows the affected population meaningfully.
+  </li>
+  <li>
+    <strong>Population sizing needs re-deriving</strong> against the real predicate: x86-64 without VNNI
+    (pre-Ice-Lake Intel, pre-Zen-4 AMD) <em>and</em> <code>nativeOnnxAvailable</code>.
+  </li>
+  <li>
+    <strong>Firefox 155 needs the same check.</strong> The two-engine architecture that ships in 155 is a
+    different code path and is not implicated here, but its <code>formfill-encoder</code> Remote Settings
+    record carries no <code>dtype</code> and therefore also resolves to q8. Whether
+    <code>mozilla/form-autofill-embed</code> has the same per-channel property should be measured the same
+    way rather than assumed. Unlike v0.2.0, that model does ship an fp32 artifact, so pinning is a real
+    option there.
+  </li>
+</ul>
+
+<h2>7. Reproducing this</h2>
+
+<p>All measurements above come from the following, run against artifacts downloaded from model-hub:</p>
+
+<pre>base=https://model-hub.mozilla.org/mozilla/tinybert-address-autofill
+curl --compressed -O $base/v0.2.0/onnx/model_quantized.onnx   <span style="color:var(--text-muted)"># note: served gzipped</span>
+curl --compressed -O $base/v0.1.0/onnx/model_quantized.onnx
+curl --compressed -O $base/v0.1.0/onnx/model.onnx             <span style="color:var(--text-muted)"># v0.2.0 fp32 is 404</span>
+
+<span style="color:var(--text-muted)"># Remote Settings record actually in production</span>
+curl -s https://firefox.settings.services.mozilla.com/v1/buckets/main/\
+collections/ml-inference-options/records | grep -A3 formfill-classification</pre>
+
+<p>Working scripts are in <code>/tmp/tb/</code>:</p>
+
+<div class="tablecard">
+<table>
+  <thead><tr><th>Script</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>tok.mjs</code></td><td>Reimplements the release-branch <code>tokenizeElements</code> to regenerate the exact <code>mlData</code> strings for the test page.</td></tr>
+    <tr><td><code>run.py</code></td><td>Runs each model revision and precision, single-input and batched.</td></tr>
+    <tr><td><code>why.py</code>, <code>act.py</code></td><td>Measure weight scale granularity, weight magnitudes, and activation zero points.</td></tr>
+    <tr><td><code>sat.py</code></td><td>Counts saturating int16 pairs per <code>MatMulInteger</code>.</td></tr>
+    <tr><td><code>e2e.py</code></td><td>Full end-to-end AVX2-no-VNNI emulation: injects the saturation error at every one of the 26 quantized matmuls in topological order.</td></tr>
+    <tr><td><code>fix.py</code></td><td>Rebuilds v0.2.0 with 7-bit weights to model <code>reduce_range=True</code>.</td></tr>
+  </tbody>
+</table>
+</div>
+
+</div>
+
+<script>
+const CHART_A = {
+  cats: ["mmi[00]", "mmi[04]", "mmi[09]", "mmi[16]", "mmi[24]", "mmi[25]"],
+  series: [
+    { name: "v0.1.0 (per-tensor)", color: "var(--series-1)", data: [1.5, 2.6, 11.5, 8.5, 30.7, 23.8] },
+    { name: "v0.2.0 (per-channel)", color: "var(--series-2)", data: [12.0, 24.9, 27.0, 30.0, 37.5, 39.3] }
+  ],
+  max: 40
+};
+
+const CHART_B = [
+  { name: "v0.1.0 q8", color: "var(--series-3)", value: 205 },
+  { name: "v0.2.0 q8 (shipped)", color: "var(--series-2)", value: 218167 },
+  { name: "v0.2.0 q8 + reduce_range", color: "var(--series-3)", value: 0 }
+];
+CHART_B[0].color = "var(--series-1)";
+
+const TOTAL_PAIRS = 437413392;
+const fmt = n => n.toLocaleString('en-US');
+const tt = document.getElementById("tt");
+function bindTip(el, text) {
+  el.addEventListener("mousemove", e => {
+    tt.textContent = text;
+    tt.style.opacity = 1;
+    tt.style.left = Math.min(e.clientX + 14, window.innerWidth - tt.offsetWidth - 8) + "px";
+    tt.style.top = (e.clientY - 34) + "px";
+  });
+  el.addEventListener("mouseleave", () => { tt.style.opacity = 0; });
+}
+
+const a = document.getElementById("chartA");
+CHART_A.cats.forEach((cat, i) => {
+  const row = document.createElement("div");
+  row.className = "grow";
+  const bars = CHART_A.series.map(s => {
+    const w = (s.data[i] / CHART_A.max) * 100;
+    return `<div class="barline"><div class="track"><div class="bar" data-tip="${s.name} &middot; ${cat} &middot; mean |w| ${s.data[i].toFixed(1)}" style="width:${w}%;background:${s.color}"></div></div><span class="val">${s.data[i].toFixed(1)}</span></div>`;
+  }).join("");
+  row.innerHTML = `<div class="cat mono">${cat}</div><div class="bars">${bars}</div>`;
+  a.appendChild(row);
+});
+
+const tA = document.getElementById("tableA");
+CHART_A.cats.forEach((cat, i) => {
+  tA.insertAdjacentHTML("beforeend",
+    `<tr><td class="mono">${cat}</td><td class="num">${CHART_A.series[0].data[i].toFixed(1)}</td><td class="num">${CHART_A.series[1].data[i].toFixed(1)}</td></tr>`);
+});
+
+const b = document.getElementById("chartB");
+const bmax = Math.max(...CHART_B.map(d => d.value));
+CHART_B.forEach(d => {
+  const w = bmax ? Math.max((d.value / bmax) * 100, d.value > 0 ? 0.35 : 0) : 0;
+  const row = document.createElement("div");
+  row.className = "solorow";
+  row.innerHTML = `<div class="cat">${d.name}</div>
+    <div class="solowrap">
+      <div class="solobar" data-zero="${d.value === 0 ? 1 : 0}" data-tip="${d.name} &middot; ${fmt(d.value)} saturating pairs" style="width:${w}%;background:${d.color}"></div>
+      <span class="soloval">${fmt(d.value)}</span>
+    </div>`;
+  b.appendChild(row);
+});
+
+const tB = document.getElementById("tableB");
+CHART_B.forEach(d => {
+  tB.insertAdjacentHTML("beforeend",
+    `<tr><td>${d.name}</td><td class="num">${fmt(d.value)}</td><td class="num">${(100 * d.value / TOTAL_PAIRS).toFixed(4)}%</td></tr>`);
+});
+
+document.querySelectorAll("[data-tip]").forEach(el => bindTip(el, el.dataset.tip.replace(/&middot;/g, "·")));
+
+const btn = document.getElementById("themebtn");
+btn.addEventListener("click", () => {
+  const dark = document.documentElement.getAttribute("data-theme") === "dark"
+    || (!document.documentElement.hasAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+});
+</script>
+</body>
+</html>
