@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Address Form &mdash; autocomplete attribute variants</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
+        h1 { font-size: 1.3em; text-align: center; margin: 0 0 6px; }
+        .intro {
+            max-width: 900px; margin: 0 auto 24px; text-align: center;
+            font-size: 0.9em; color: #555; line-height: 1.5;
+        }
+        .forms {
+            display: flex; flex-wrap: wrap; gap: 20px;
+            align-items: flex-start; justify-content: center;
+        }
+        form.variant {
+            flex: 1 1 300px; max-width: 360px;
+            padding: 20px 24px; border: 1px solid #ccc;
+            border-radius: 6px; background-color: #fff;
+        }
+        h2 { margin-top: 0; font-size: 1.05em; }
+        label { display: block; margin-top: 10px; font-size: 0.9em; font-weight: bold; }
+        input {
+            width: 100%; box-sizing: border-box; padding: 8px; margin-top: 4px;
+            border: 1px solid #ccc; border-radius: 4px;
+        }
+        .note {
+            font-size: 0.8em; color: #555; border-radius: 4px;
+            padding: 10px 12px; margin: 0 0 16px; line-height: 1.45;
+        }
+        .note code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; }
+        .v-plain .note { background: #fffbe6; border: 1px solid #f0e0a0; }
+        .v-ac    .note { background: #eef6ff; border: 1px solid #b8d4f0; }
+        .v-sex   .note { background: #fdeef6; border: 1px solid #f0b8d4; }
+        button {
+            margin-top: 16px; padding: 10px 16px; background-color: #4CAF50;
+            color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 1em;
+        }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <h1>Address autofill &mdash; <code>autocomplete</code> attribute variants</h1>
+    <p class="intro">
+        Three structurally identical address forms. All three use the same
+        <code>&lt;label&gt;</code> text and the same <code>name</code> values, so label/id/name
+        inference has identical input in each. Only the <code>autocomplete</code> attributes differ.
+        <code>id</code>s carry a per-form suffix because ids must be unique within one document.
+    </p>
+
+    <div class="forms">
+        <form id="addressFormNoAutocomplete" class="variant v-plain" action="submitted.html" method="get">
+            <h2>1 &mdash; no <code>autocomplete</code></h2>
+            <p class="note">No field carries an <code>autocomplete</code> attribute, so the browser must infer every field type from its <code>&lt;label&gt;</code>, <code>id</code> and <code>name</code>. <strong>Street Address</strong> declares <code>autocomplete="unsupport-attribute"</code> &mdash; an invalid token, so it should be ignored and fall back to the same inference.</p>
+            <label for="name-plain">Full Name</label>
+            <input type="text" id="name-plain" name="name" required>
+            <label for="street-address-plain">Street Address</label>
+            <input type="text" id="street-address-plain" name="street-address" autocomplete="unsupport-attribute" required>
+            <label for="addr2-plain">Apartment, Suite, Unit (optional)</label>
+            <input type="text" id="addr2-plain" name="addr2">
+            <label for="city-plain">City</label>
+            <input type="text" id="city-plain" name="city" required>
+            <label for="state-plain">State / Province</label>
+            <input type="text" id="state-plain" name="state" required>
+            <label for="zip-plain">ZIP / Postal Code</label>
+            <input type="text" id="zip-plain" name="zip" required>
+            <label for="country-plain">Country</label>
+            <input type="text" id="country-plain" name="country" required>
+            <label for="company-plain">Organization / Company</label>
+            <input type="text" id="company-plain" name="company">
+            <label for="email-plain">Email</label>
+            <input type="email" id="email-plain" name="email">
+            <label for="phone-plain">Phone</label>
+            <input type="tel" id="phone-plain" name="phone">
+            <button type="submit">Submit</button>
+        </form>
+        <form id="addressFormWithAutocomplete" class="variant v-ac" action="submitted.html" method="get" autocomplete="on">
+            <h2>2 &mdash; with <code>autocomplete</code></h2>
+            <p class="note">Every field declares an explicit <code>autocomplete</code> token. <strong>Street Address</strong> again declares <code>autocomplete="unsupport-attribute"</code> &mdash; invalid, so it should be ignored and fall back to label/id/name inference for that field only.</p>
+            <label for="name-ac">Full Name</label>
+            <input type="text" id="name-ac" name="name" autocomplete="name" required>
+            <label for="street-address-ac">Street Address</label>
+            <input type="text" id="street-address-ac" name="street-address" autocomplete="unsupport-attribute" required>
+            <label for="addr2-ac">Apartment, Suite, Unit (optional)</label>
+            <input type="text" id="addr2-ac" name="addr2" autocomplete="address-line2">
+            <label for="city-ac">City</label>
+            <input type="text" id="city-ac" name="city" autocomplete="address-level2" required>
+            <label for="state-ac">State / Province</label>
+            <input type="text" id="state-ac" name="state" autocomplete="address-level1" required>
+            <label for="zip-ac">ZIP / Postal Code</label>
+            <input type="text" id="zip-ac" name="zip" autocomplete="postal-code" required>
+            <label for="country-ac">Country</label>
+            <input type="text" id="country-ac" name="country" autocomplete="country-name" required>
+            <label for="company-ac">Organization / Company</label>
+            <input type="text" id="company-ac" name="company" autocomplete="organization">
+            <label for="email-ac">Email</label>
+            <input type="email" id="email-ac" name="email" autocomplete="email">
+            <label for="phone-ac">Phone</label>
+            <input type="tel" id="phone-ac" name="phone" autocomplete="tel">
+            <button type="submit">Submit</button>
+        </form>
+        <form id="addressFormSexOnStreet" class="variant v-sex" action="submitted.html" method="get" autocomplete="on">
+            <h2>3 &mdash; street address as <code>sex</code></h2>
+            <p class="note">Every field declares an explicit <code>autocomplete</code> token. <strong>Street Address</strong> declares <code>autocomplete="sex"</code> &mdash; unlike <code>unsupport-attribute</code> this <em>is</em> a valid autofill token, just the wrong one for a street address, so the browser should honour it and type the field as <code>sex</code> instead of inferring an address line.</p>
+            <label for="name-sex">Full Name</label>
+            <input type="text" id="name-sex" name="name" autocomplete="name" required>
+            <label for="street-address-sex">Street Address</label>
+            <input type="text" id="street-address-sex" name="street-address" autocomplete="sex" required>
+            <label for="addr2-sex">Apartment, Suite, Unit (optional)</label>
+            <input type="text" id="addr2-sex" name="addr2" autocomplete="address-line2">
+            <label for="city-sex">City</label>
+            <input type="text" id="city-sex" name="city" autocomplete="address-level2" required>
+            <label for="state-sex">State / Province</label>
+            <input type="text" id="state-sex" name="state" autocomplete="address-level1" required>
+            <label for="zip-sex">ZIP / Postal Code</label>
+            <input type="text" id="zip-sex" name="zip" autocomplete="postal-code" required>
+            <label for="country-sex">Country</label>
+            <input type="text" id="country-sex" name="country" autocomplete="country-name" required>
+            <label for="company-sex">Organization / Company</label>
+            <input type="text" id="company-sex" name="company" autocomplete="organization">
+            <label for="email-sex">Email</label>
+            <input type="email" id="email-sex" name="email" autocomplete="email">
+            <label for="phone-sex">Phone</label>
+            <input type="tel" id="phone-sex" name="phone" autocomplete="tel">
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>
