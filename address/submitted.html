@@ -25,10 +25,25 @@
     <div class="container">
         <h2>✅ Submission Received</h2>
         <dl id="values"></dl>
-        <a href="address_creditcard.html">← Back to form</a>
+        <a id="back-link" href="address_creditcard.html">← Back to form</a>
     </div>
 
     <script>
+        // Point the "Back to form" link at whichever form submitted this page.
+        var knownForms = [
+            "address_creditcard.html",
+            "address_no_autocomplete.html",
+            "address_with_autocomplete.html",
+            "name_address_birthday.html",
+            "name_address_birthday_dark.html"
+        ];
+        if (document.referrer) {
+            var referrerPage = new URL(document.referrer).pathname.split("/").pop();
+            if (knownForms.includes(referrerPage)) {
+                document.getElementById("back-link").href = referrerPage;
+            }
+        }
+
         var params = new URLSearchParams(window.location.search);
         var dl = document.getElementById('values');
         if ([...params].length === 0) {

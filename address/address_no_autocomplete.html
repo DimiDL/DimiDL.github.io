@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Address Form &mdash; No autocomplete attribute</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #fafafa; }
+        form {
+            max-width: 520px;
+            margin: auto;
+            padding: 20px 24px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        h2 { margin-top: 0; }
+        section { margin-bottom: 20px; }
+        section h3 {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 4px;
+        }
+        label { display: block; margin-top: 10px; font-size: 0.9em; font-weight: bold; }
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .row { display: flex; gap: 10px; }
+        .row .field { flex: 1; }
+        .note {
+            font-size: 0.85em;
+            color: #555;
+            background: #fffbe6;
+            border: 1px solid #f0e0a0;
+            border-radius: 4px;
+            padding: 10px 12px;
+            margin: 0 0 20px;
+        }
+        .note code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; }
+        button {
+            margin-top: 16px;
+            padding: 10px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover { background-color: #45a049; }
+        .sibling { display: block; text-align: center; margin: 16px auto 0; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <form id="addressFormNoAutocomplete" action="submitted.html" method="get">
+        <h2>Address Form &mdash; without <code>autocomplete</code></h2>
+
+        <p class="note">
+            No field carries an <code>autocomplete</code> attribute, so the browser has to infer
+            each field type from its <code>&lt;label&gt;</code>, <code>id</code> and <code>name</code>.
+            The one exception is <strong>Street Address</strong>, which intentionally declares
+            <code>autocomplete="unsupport-attribute"</code> &mdash; an invalid token, so the browser
+            should ignore it and fall back to the same label/id/name inference.
+        </p>
+
+        <section>
+            <h3>Address</h3>
+
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="street-address">Street Address</label>
+            <input type="text" id="street-address" name="street-address"
+                   autocomplete="unsupport-attribute" required>
+
+            <label for="addr2">Apartment, Suite, Unit (optional)</label>
+            <input type="text" id="addr2" name="addr2">
+
+            <label for="city">City</label>
+            <input type="text" id="city" name="city" required>
+
+            <div class="row">
+                <div class="field">
+                    <label for="state">State / Province</label>
+                    <input type="text" id="state" name="state" required>
+                </div>
+                <div class="field">
+                    <label for="zip">ZIP / Postal Code</label>
+                    <input type="text" id="zip" name="zip" required>
+                </div>
+            </div>
+
+            <label for="country">Country</label>
+            <input type="text" id="country" name="country" required>
+        </section>
+
+        <section>
+            <h3>Contact</h3>
+
+            <label for="company">Organization / Company</label>
+            <input type="text" id="company" name="company">
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email">
+
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone">
+        </section>
+
+        <button type="submit">Submit</button>
+
+        <a class="sibling" href="address_with_autocomplete.html">
+            Same form with <code>autocomplete</code> attributes &rarr;
+        </a>
+    </form>
+</body>
+</html>
