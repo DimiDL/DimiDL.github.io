@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bug 2069438 — rollout risk assessment</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-0: #f4f3f0;
+    --surface-1: #fcfcfb;
+    --surface-2: #f0efec;
+    --line: #dedcd7;
+    --grid: #e8e6e2;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #7c7b75;
+    --s1: #2a78d6;
+    --s2: #eb6834;
+    --s3: #1baf7a;
+    --good: #0f7a4f;
+    --warn: #9c5a00;
+    --crit: #b3261e;
+    --warn-bg: #fdf3e2;
+    --crit-bg: #fdecea;
+    --good-bg: #e7f4ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-0: #111110;
+      --surface-1: #1a1a19;
+      --surface-2: #242423;
+      --line: #3a3a37;
+      --grid: #2c2c2a;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #94938a;
+      --s1: #3987e5;
+      --s2: #d95926;
+      --s3: #199e70;
+      --good: #4cc38a;
+      --warn: #e0a33c;
+      --crit: #f07a72;
+      --warn-bg: #2e2413;
+      --crit-bg: #331b19;
+      --good-bg: #16291f;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-0: #111110;
+    --surface-1: #1a1a19;
+    --surface-2: #242423;
+    --line: #3a3a37;
+    --grid: #2c2c2a;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #94938a;
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --good: #4cc38a;
+    --warn: #e0a33c;
+    --crit: #f07a72;
+    --warn-bg: #2e2413;
+    --crit-bg: #331b19;
+    --good-bg: #16291f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface-0); }
+  .viz-root {
+    background: var(--surface-0);
+    color: var(--text-primary);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 20px 80px;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+  header { padding: 44px 0 22px; display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; }
+  h1 { font-size: 26px; letter-spacing: -0.01em; margin: 0 0 6px; }
+  .sub { color: var(--text-secondary); font-size: 14px; margin: 0; }
+  #themeToggle {
+    background: var(--surface-1); color: var(--text-secondary); border: 1px solid var(--line);
+    border-radius: 7px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
+  }
+  .verdict {
+    border: 1px solid var(--line); border-left: 3px solid var(--warn);
+    background: var(--warn-bg); border-radius: 10px; padding: 18px 20px; margin-bottom: 24px;
+  }
+  .verdict h2 { margin: 0 0 6px; font-size: 18px; }
+  .verdict p { margin: 0; color: var(--text-secondary); font-size: 14px; max-width: 90ch; }
+  .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 340px)); gap: 12px; margin-bottom: 30px; }
+  @media (max-width: 820px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi { background: var(--surface-1); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .kpi .lab { font-size: 12px; color: var(--text-muted); margin-bottom: 7px; line-height: 1.35; }
+  .kpi .val { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .kpi .note { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+  .kpi.bad .val { color: var(--crit); }
+  .kpi.ok .val { color: var(--good); }
+  figure {
+    margin: 0 0 22px; background: var(--surface-1); border: 1px solid var(--line);
+    border-radius: 10px; padding: 18px 18px 12px;
+  }
+  figcaption { margin-bottom: 4px; }
+  figcaption .t { font-size: 15px; font-weight: 620; }
+  figcaption .d { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 10px 0 2px; font-size: 13px; color: var(--text-secondary); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .lk { width: 14px; height: 2px; border-radius: 1px; }
+  .rect { width: 11px; height: 11px; border-radius: 2px; }
+  svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--crit); background: var(--crit-bg);
+    border-radius: 10px; padding: 15px 18px; margin: 0 0 22px;
+  }
+  .callout strong { display: block; margin-bottom: 5px; font-size: 14px; }
+  .callout p { margin: 0; font-size: 13.5px; color: var(--text-secondary); max-width: 95ch; }
+  .rec { background: var(--surface-1); border: 1px solid var(--line); border-radius: 10px; padding: 20px 22px; margin-bottom: 22px; }
+  .rec h2 { margin: 0 0 12px; font-size: 17px; }
+  .rec ul { margin: 0; padding-left: 18px; color: var(--text-secondary); font-size: 14px; }
+  .rec li { margin-bottom: 7px; }
+  .rec li b { color: var(--text-primary); font-weight: 620; }
+  details { background: var(--surface-1); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; }
+  summary { cursor: pointer; font-size: 14px; font-weight: 600; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; margin-top: 12px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--grid); }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--text-muted); font-weight: 600; }
+  caption { text-align: left; font-size: 13px; color: var(--text-secondary); padding: 10px 0 2px; }
+  #tip {
+    position: fixed; pointer-events: none; opacity: 0; transition: opacity .1s;
+    background: var(--surface-1); border: 1px solid var(--line); border-radius: 8px;
+    padding: 9px 11px; font-size: 12.5px; box-shadow: 0 5px 18px rgba(0,0,0,.14); z-index: 50; min-width: 130px;
+  }
+  #tip .h { color: var(--text-muted); font-size: 11.5px; margin-bottom: 5px; }
+  #tip .r { display: flex; align-items: center; gap: 7px; margin-top: 3px; }
+  #tip .r .v { font-weight: 650; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+  #tip .r .n { color: var(--text-secondary); font-size: 12px; }
+  footer { color: var(--text-muted); font-size: 12.5px; padding-top: 10px; line-height: 1.6; }
+  .hit { fill: transparent; }
+  .mark { transition: opacity .1s; }
+  .dim { opacity: .38; }
+</style>
+</head>
+<body>
+<div class="viz-root">
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>Rust login storage — is search performance a rollout blocker?</h1>
+    <p class="sub">Bug 2069438 &middot; Toolkit :: Password Manager &middot; measured locally, 2026-09-16</p>
+  </div>
+  <button id="themeToggle" type="button">Dark</button>
+</header>
+
+<div class="verdict">
+  <h2>No for autofill &mdash; measured at near parity with JSON. Yes for password import.</h2>
+  <p>A real page-load autofill search is only 1.2&ndash;1.8&times; slower on Rust, because both backends pay the
+  same dominant cost: origin matching runs in JS either way. CSV import is the regression &mdash; quadratic,
+  and 1.7&ndash;5.7&times; slower than JSON across a 250 to 2,000 password import, with the gap widening as the
+  file grows. The store-size distribution used to deprioritise this does not bound the import case.</p>
+</div>
+
+<div class="kpis">
+  <div class="kpi ok">
+    <div class="lab">Autofill search vs JSON<br>at 5,000 logins</div>
+    <div class="val">1.4&times;</div>
+    <div class="note">27.9 ms vs 19.3 ms &mdash; near parity</div>
+  </div>
+  <div class="kpi">
+    <div class="lab">Profiles with 1,024+ saved logins</div>
+    <div class="val">0.2%</div>
+    <div class="note">91% hold fewer than 128</div>
+  </div>
+</div>
+
+<figure>
+  <figcaption>
+    <div class="t">Import into an empty profile — the migration case</div>
+    <div class="d">JSON is linear. Rust is quadratic: 8&times; the passwords costs 25&times; the time.</div>
+  </figcaption>
+  <div class="legend">
+    <span><i class="lk" style="background:var(--s1)"></i>JSON backend (today)</span>
+    <span><i class="lk" style="background:var(--s2)"></i>Rust backend</span>
+  </div>
+  <svg id="c1" viewBox="0 0 820 340" role="img"
+       aria-label="Import time against CSV size. JSON rises linearly from 143 to 1086 ms; Rust rises quadratically from 249 to 6186 ms."></svg>
+</figure>
+
+<div class="callout">
+  <strong>Why the store-size distribution does not bound this</strong>
+  <p>Comment 3 deprioritises the bug because only 0.2% of profiles hold 1,024+ logins. But import cost is
+  driven by the <em>size of the CSV</em>, not the size of the existing store: the add phase re-reads a store
+  that grows row by row, so a first-time import is quadratic <em>on an empty profile</em>. Someone migrating
+  3,000 passwords from another manager has zero saved logins at that moment. The percentiles describe
+  existing profiles; the exposed population is "people who import a large file", and those are different sets.</p>
+</div>
+
+<figure>
+  <figcaption>
+    <div class="t">Autofill search &mdash; what page load and autocomplete actually do</div>
+    <div class="d">Near parity. Origin matching runs in JS on both backends and dominates the cost.</div>
+  </figcaption>
+  <div class="legend">
+    <span><i class="rect" style="background:var(--s1)"></i>JSON backend</span>
+    <span><i class="rect" style="background:var(--s2)"></i>Rust backend</span>
+  </div>
+  <svg id="cA" viewBox="0 0 820 300" role="img"
+       aria-label="Autofill search cost by store size. At 5,000 logins JSON takes 19.3 ms and Rust 27.9 ms, a 1.4 times difference."></svg>
+</figure>
+
+<figure>
+  <figcaption>
+    <div class="t">Where the Rust store's extra cost comes from</div>
+    <div class="d">One read of 5,000 candidate rows, decoded then discarded. Import pays this twice per row.</div>
+  </figcaption>
+  <svg id="c3" viewBox="0 0 820 260" role="img"
+       aria-label="Breakdown of one scan: JS string decode 2.39 ms, Rust row decode 2.10 ms, SQL execution 1.08 ms, column-name lookup 1.06 ms, serialize 0.55 ms, matching 0.18 ms."></svg>
+</figure>
+
+<div class="rec">
+  <h2>Recommendation</h2>
+  <ul>
+    <li><b>Do not block the rollout.</b> Steady-state search is unaffected at every realistic store size, and that is the overwhelming majority of what the feature does.</li>
+    <li><b>Fix the import path before anything that drives imports</b> — onboarding, migration prompts, a switch-to-Firefox campaign. A 30 s unresponsive import sits in the migration funnel and self-selects for large password sets.</li>
+    <li><b>S3 is right; P3 looks too low.</b> This is a regression against the backend being replaced, and the empty-profile exposure is not captured by the store-size percentiles.</li>
+    <li><b>Autofill is not where the work is.</b> <code>signon.schemeUpgrades</code> and <code>signon.includeOtherSubdomainsInLookup</code> both default true, so page-load and autocomplete matching runs in JS and costs the same on either backend. Making that path faster is a separate, pre-existing problem.</li>
+  </ul>
+</div>
+
+<details>
+  <summary>Data table</summary>
+  <table>
+    <caption>Import into an empty profile, milliseconds</caption>
+    <thead><tr><th>CSV rows</th><th>JSON</th><th>Rust</th><th>Ratio</th><th>Rust rows read</th></tr></thead>
+    <tbody id="t1"></tbody>
+  </table>
+  <table>
+    <caption>One autofill search, milliseconds, by saved logins</caption>
+    <thead><tr><th>Saved logins</th><th>JSON</th><th>Rust</th><th>Ratio</th><th>Share of profiles</th></tr></thead>
+    <tbody id="t2"></tbody>
+  </table>
+  <table>
+    <caption>One read of 5,000 candidate rows, component breakdown</caption>
+    <thead><tr><th>Component</th><th>Side</th><th>ms</th><th>Share</th></tr></thead>
+    <tbody id="t3"></tbody>
+  </table>
+</details>
+
+<footer>
+  Measured with an xpcshell harness driving <code>LoginCSVImport.importFromCSV</code>, Apple M4 Max.
+  Import comparisons are a local opt build (no PGO/LTO), all three arms on the same binary; absolute
+  times are faster on release builds, ratios hold.
+  Per-search figures are harness timings of the shape page load sends
+  (<code>schemeUpgrades</code> and <code>acceptDifferentSubdomains</code> both set): 200 timed
+  <code>searchLoginsAsync</code> calls after 20 warm-up calls, one eTLD+1 per stored login so a search
+  matches exactly one. The component breakdown alone comes from a Gecko profile on an
+  artifact build, with the profiler's own 34% marker overhead excluded.
+  Store-size percentiles are migration telemetry quoted from bug 2069438 comment 3 and were not
+  independently verified. The 30 s figure for a 5,000-password import is extrapolated from the 2,000-row
+  measurement; every other number is measured.
+</footer>
+
+</div>
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  "use strict";
+  const SVG = "http://www.w3.org/2000/svg";
+  const el = (n, a = {}) => { const e = document.createElementNS(SVG, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const fmt = n => n.toLocaleString("en-US");
+  const tip = document.getElementById("tip");
+
+  const showTip = (evt, head, rows) => {
+    tip.textContent = "";
+    const h = document.createElement("div");
+    h.className = "h"; h.textContent = head; tip.appendChild(h);
+    for (const r of rows) {
+      const d = document.createElement("div"); d.className = "r";
+      if (r.color) { const k = document.createElement("i"); k.className = "lk"; k.style.background = r.color; d.appendChild(k); }
+      const v = document.createElement("span"); v.className = "v"; v.textContent = r.value; d.appendChild(v);
+      const n = document.createElement("span"); n.className = "n"; n.textContent = r.name; d.appendChild(n);
+      tip.appendChild(d);
+    }
+    tip.style.opacity = "1";
+    const pad = 14, w = tip.offsetWidth, h2 = tip.offsetHeight;
+    let x = evt.clientX + pad, y = evt.clientY - h2 / 2;
+    if (x + w > innerWidth - 8) x = evt.clientX - w - pad;
+    tip.style.left = Math.max(8, x) + "px";
+    tip.style.top = Math.min(Math.max(8, y), innerHeight - h2 - 8) + "px";
+  };
+  const hideTip = () => { tip.style.opacity = "0"; };
+  const css = v => getComputedStyle(document.querySelector(".viz-root")).getPropertyValue(v).trim();
+
+  /* ---------------- data ---------------- */
+  const D1 = [
+    { rows: 250, json: 143, rust: 249, read: 31125 },
+    { rows: 500, json: 268, rust: 982, read: 124750 },
+    { rows: 1000, json: 527, rust: 2359, read: 499500 },
+    { rows: 2000, json: 1086, rust: 6186, read: 1999000 },
+  ];
+  const SHARE = {
+    0: "21.5% have none", 15: "66% have 15 or fewer", 128: "91% below 128",
+    1024: "0.2% at or above", 2048: "0.03% at or above", 5000: "0.002% at or above",
+  };
+  const DA = [
+    { n: 0, json: 0.0114, rust: 0.0295 },
+    { n: 15, json: 0.3061, rust: 0.1815 },
+    { n: 128, json: 0.6809, rust: 0.8381 },
+    { n: 1024, json: 4.1955, rust: 6.0513 },
+    { n: 2048, json: 7.5993, rust: 13.4061 },
+    { n: 5000, json: 19.2929, rust: 27.9412 },
+  ];
+  const D3 = [
+    { k: "JS decode strings", side: "Parent main thread", ms: 2.39 },
+    { k: "Rust decode rows", side: "Rust store thread", ms: 2.10 },
+    { k: "SQL execution", side: "Rust store thread", ms: 1.08 },
+    { k: "Column-name lookup", side: "Rust store thread", ms: 1.06 },
+    { k: "Serialize to buffer", side: "Rust store thread", ms: 0.55 },
+    { k: "Actually matching", side: "Parent main thread", ms: 0.18 },
+  ];
+
+  /* ---------------- chart 1: lines ---------------- */
+  function c1() {
+    const svg = document.getElementById("c1"); svg.textContent = "";
+    const W = 820, H = 340, m = { t: 14, r: 88, b: 46, l: 58 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b, yMax = 6500;
+    const x = i => m.l + (iw * i) / (D1.length - 1);
+    const y = v => m.t + ih - (v / yMax) * ih;
+
+    for (const gv of [0, 1500, 3000, 4500, 6000]) {
+      svg.appendChild(el("line", { x1: m.l, x2: m.l + iw, y1: y(gv), y2: y(gv), stroke: css("--grid"), "stroke-width": 1 }));
+      const tx = el("text", { x: m.l - 10, y: y(gv) + 4, "text-anchor": "end", "font-size": 11, fill: css("--text-muted") });
+      tx.textContent = gv === 0 ? "0" : fmt(gv); svg.appendChild(tx);
+    }
+    const yl = el("text", { x: m.l - 10, y: m.t - 2, "text-anchor": "end", "font-size": 11, fill: css("--text-muted") });
+    yl.textContent = "ms"; svg.appendChild(yl);
+
+    D1.forEach((d, i) => {
+      const tx = el("text", { x: x(i), y: m.t + ih + 20, "text-anchor": "middle", "font-size": 11.5, fill: css("--text-secondary") });
+      tx.textContent = fmt(d.rows); svg.appendChild(tx);
+    });
+    const xl = el("text", { x: m.l + iw / 2, y: m.t + ih + 40, "text-anchor": "middle", "font-size": 11.5, fill: css("--text-muted") });
+    xl.textContent = "passwords in the imported CSV"; svg.appendChild(xl);
+
+    for (const sr of [{ k: "rust", c: css("--s2"), lab: "Rust" }, { k: "json", c: css("--s1"), lab: "JSON" }]) {
+      const pts = D1.map((d, i) => [x(i), y(d[sr.k])]);
+      svg.appendChild(el("path", {
+        d: pts.map((pt, i) => (i ? "L" : "M") + pt[0] + " " + pt[1]).join(" "),
+        fill: "none", stroke: sr.c, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round",
+      }));
+      pts.forEach(pt => svg.appendChild(el("circle", { cx: pt[0], cy: pt[1], r: 4.5, fill: sr.c, stroke: css("--surface-1"), "stroke-width": 2 })));
+      const last = D1[D1.length - 1];
+      const t = el("text", { x: x(D1.length - 1) + 12, y: y(last[sr.k]) + 4, "font-size": 12.5, "font-weight": 620, fill: css("--text-primary") });
+      t.textContent = fmt(last[sr.k]) + " ms"; svg.appendChild(t);
+      const t2 = el("text", { x: x(D1.length - 1) + 12, y: y(last[sr.k]) + 19, "font-size": 11, fill: css("--text-muted") });
+      t2.textContent = sr.lab; svg.appendChild(t2);
+    }
+
+    const cross = el("line", { y1: m.t, y2: m.t + ih, stroke: css("--text-muted"), "stroke-width": 1, opacity: 0 });
+    svg.appendChild(cross);
+    D1.forEach((d, i) => {
+      const half = iw / (D1.length - 1) / 2;
+      const r = el("rect", { class: "hit", x: x(i) - half, y: m.t, width: half * 2, height: ih });
+      r.addEventListener("pointermove", e => {
+        cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("opacity", .45);
+        showTip(e, fmt(d.rows) + " passwords imported", [
+          { value: fmt(d.rust) + " ms", name: "Rust", color: css("--s2") },
+          { value: fmt(d.json) + " ms", name: "JSON", color: css("--s1") },
+          { value: (d.rust / d.json).toFixed(1) + "×", name: "slower" },
+          { value: fmt(d.read), name: "rows read" },
+        ]);
+      });
+      r.addEventListener("pointerleave", () => { cross.setAttribute("opacity", 0); hideTip(); });
+      svg.appendChild(r);
+    });
+  }
+
+  /* ---------------- grouped columns, JSON vs Rust ---------------- */
+  function pairChart(id, data, yMax, ticks, labelIdx, unitLabel) {
+    const svg = document.getElementById(id); svg.textContent = "";
+    const vb = svg.viewBox.baseVal;
+    const W = vb.width, H = vb.height, m = { t: 28, r: 10, b: 58, l: 46 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const band = iw / data.length, bw = Math.min(24, (band - 14) / 2), gap = 2;
+    const y = v => m.t + ih - (v / yMax) * ih;
+    const series = [{ k: "json", c: css("--s1"), lab: "JSON" }, { k: "rust", c: css("--s2"), lab: "Rust" }];
+
+    for (const gv of ticks) {
+      svg.appendChild(el("line", { x1: m.l, x2: m.l + iw, y1: y(gv), y2: y(gv), stroke: css("--grid"), "stroke-width": 1 }));
+      const tx = el("text", { x: m.l - 8, y: y(gv) + 4, "text-anchor": "end", "font-size": 11, fill: css("--text-muted") });
+      tx.textContent = gv; svg.appendChild(tx);
+    }
+    const yl = el("text", { x: m.l - 8, y: m.t - 12, "text-anchor": "end", "font-size": 11, fill: css("--text-muted") });
+    yl.textContent = "ms"; svg.appendChild(yl);
+
+    data.forEach((d, i) => {
+      const cx = m.l + band * i + band / 2;
+      series.forEach((sr, j) => {
+        const bx = cx - bw - gap / 2 + j * (bw + gap);
+        const top = y(d[sr.k]), hh = m.t + ih - top;
+        let path;
+        if (hh < 5) path = `M${bx} ${m.t + ih - 2} h${bw} v2 h${-bw} Z`;
+        else path = `M${bx} ${m.t + ih} L${bx} ${top + 4} Q${bx} ${top} ${bx + 4} ${top} L${bx + bw - 4} ${top} Q${bx + bw} ${top} ${bx + bw} ${top + 4} L${bx + bw} ${m.t + ih} Z`;
+        svg.appendChild(el("path", { d: path, fill: sr.c, class: "mark" }));
+      });
+      if (i === labelIdx) {
+        const t = el("text", { x: cx, y: y(d.rust) - 8, "text-anchor": "middle", "font-size": 11.5, "font-weight": 620, fill: css("--text-primary") });
+        t.textContent = (d.rust / d.json).toFixed(1) + "×"; svg.appendChild(t);
+      }
+      const lx = el("text", { x: cx, y: m.t + ih + 17, "text-anchor": "middle", "font-size": 10.5, fill: css("--text-secondary") });
+      lx.textContent = fmt(d.n); svg.appendChild(lx);
+
+      const hit = el("rect", { class: "hit", x: m.l + band * i, y: m.t, width: band, height: ih });
+      hit.addEventListener("pointermove", e => showTip(e, fmt(d.n) + " saved logins", [
+        { value: d.rust.toFixed(2) + " ms", name: "Rust", color: css("--s2") },
+        { value: d.json.toFixed(2) + " ms", name: "JSON", color: css("--s1") },
+        { value: (d.rust / d.json).toFixed(1) + "×", name: "slower" },
+        { value: SHARE[d.n], name: "" },
+      ]));
+      hit.addEventListener("pointerleave", hideTip);
+      svg.appendChild(hit);
+    });
+
+    const xl = el("text", { x: m.l + iw / 2, y: m.t + ih + 36, "text-anchor": "middle", "font-size": 11, fill: css("--text-muted") });
+    xl.textContent = "saved logins in the profile"; svg.appendChild(xl);
+    const xl2 = el("text", { x: m.l + iw / 2, y: m.t + ih + 50, "text-anchor": "middle", "font-size": 10.5, fill: css("--text-muted") });
+    xl2.textContent = unitLabel; svg.appendChild(xl2);
+  }
+
+  /* ---------------- chart 3: horizontal bars ---------------- */
+  function c3() {
+    const svg = document.getElementById("c3"); svg.textContent = "";
+    const W = 820, H = 260, m = { t: 10, r: 64, b: 36, l: 150 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b, xMax = 2.6;
+    const band = ih / D3.length, bh = Math.min(20, band - 8);
+    const x = v => (v / xMax) * iw;
+
+    for (const gv of [0, 0.5, 1, 1.5, 2, 2.5]) {
+      svg.appendChild(el("line", { x1: m.l + x(gv), x2: m.l + x(gv), y1: m.t, y2: m.t + ih, stroke: css("--grid"), "stroke-width": 1 }));
+      const tx = el("text", { x: m.l + x(gv), y: m.t + ih + 17, "text-anchor": "middle", "font-size": 11, fill: css("--text-muted") });
+      tx.textContent = gv; svg.appendChild(tx);
+    }
+    const xl = el("text", { x: m.l + iw / 2, y: m.t + ih + 32, "text-anchor": "middle", "font-size": 11, fill: css("--text-muted") });
+    xl.textContent = "ms per scan of 5,000 candidate rows"; svg.appendChild(xl);
+
+    D3.forEach((d, i) => {
+      const cy = m.t + band * i + band / 2, w = Math.max(2, x(d.ms));
+      svg.appendChild(el("path", {
+        d: `M${m.l} ${cy - bh / 2} L${m.l + w - 4} ${cy - bh / 2} Q${m.l + w} ${cy - bh / 2} ${m.l + w} ${cy - bh / 2 + 4} L${m.l + w} ${cy + bh / 2 - 4} Q${m.l + w} ${cy + bh / 2} ${m.l + w - 4} ${cy + bh / 2} L${m.l} ${cy + bh / 2} Z`,
+        fill: css("--s1"), class: "mark",
+      }));
+      const lab = el("text", { x: m.l - 10, y: cy + 4, "text-anchor": "end", "font-size": 12, fill: css("--text-secondary") });
+      lab.textContent = d.k; svg.appendChild(lab);
+      const v = el("text", { x: m.l + w + 8, y: cy + 4, "font-size": 12, "font-weight": 620, fill: css("--text-primary") });
+      v.textContent = d.ms.toFixed(2); svg.appendChild(v);
+
+      const hit = el("rect", { class: "hit", x: 0, y: m.t + band * i, width: W, height: band });
+      hit.addEventListener("pointermove", e => showTip(e, d.k, [
+        { value: d.ms.toFixed(2) + " ms", name: "per scan", color: css("--s1") },
+        { value: ((d.ms / 7.84) * 100).toFixed(0) + "%", name: "of the scan" },
+        { value: d.side, name: "" },
+      ]));
+      hit.addEventListener("pointerleave", hideTip);
+      svg.appendChild(hit);
+    });
+  }
+
+  /* ---------------- tables ---------------- */
+  function tables() {
+    const add = (tb, cells) => {
+      const tr = document.createElement("tr");
+      for (const c of cells) { const td = document.createElement("td"); td.textContent = c; tr.appendChild(td); }
+      tb.appendChild(tr);
+    };
+    const t1 = document.getElementById("t1");
+    D1.forEach(d => add(t1, [fmt(d.rows), fmt(d.json), fmt(d.rust), (d.rust / d.json).toFixed(1) + "×", fmt(d.read)]));
+    const t2 = document.getElementById("t2");
+    DA.forEach(d => add(t2, [
+      fmt(d.n), d.json.toFixed(2), d.rust.toFixed(2),
+      (d.rust / d.json).toFixed(1) + "×", SHARE[d.n],
+    ]));
+    const t3 = document.getElementById("t3");
+    D3.forEach(d => add(t3, [d.k, d.side, d.ms.toFixed(2), ((d.ms / 7.84) * 100).toFixed(0) + "%"]));
+  }
+
+  const draw = () => {
+    c1();
+    pairChart("cA", DA, 30, [0, 10, 20, 30], 5, "label shows the Rust / JSON ratio");
+    c3();
+  };
+  draw(); tables();
+
+  const btn = document.getElementById("themeToggle");
+  const sysDark = matchMedia("(prefers-color-scheme: dark)");
+  const cur = () => document.documentElement.dataset.theme || (sysDark.matches ? "dark" : "light");
+  const sync = () => { btn.textContent = cur() === "dark" ? "Light" : "Dark"; };
+  btn.addEventListener("click", () => {
+    document.documentElement.dataset.theme = cur() === "dark" ? "light" : "dark";
+    sync(); requestAnimationFrame(draw);
+  });
+  sysDark.addEventListener("change", () => { sync(); requestAnimationFrame(draw); });
+  sync();
+  addEventListener("resize", () => requestAnimationFrame(draw));
+})();
+</script>
+</body>
+</html>
