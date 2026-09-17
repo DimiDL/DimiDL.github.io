@@ -191,15 +191,6 @@
        aria-label="Import time against CSV size. JSON rises linearly from 143 to 1086 ms; Rust rises quadratically from 249 to 6186 ms."></svg>
 </figure>
 
-<div class="callout">
-  <strong>Why the store-size distribution does not bound this</strong>
-  <p>Comment 3 deprioritises the bug because only 0.2% of profiles hold 1,024+ logins. But import cost is
-  driven by the <em>size of the CSV</em>, not the size of the existing store: the add phase re-reads a store
-  that grows row by row, so a first-time import is quadratic <em>on an empty profile</em>. Someone migrating
-  3,000 passwords from another manager has zero saved logins at that moment. The percentiles describe
-  existing profiles; the exposed population is "people who import a large file", and those are different sets.</p>
-</div>
-
 <figure>
   <figcaption>
     <div class="t">Autofill search &mdash; what page load and autocomplete actually do</div>
