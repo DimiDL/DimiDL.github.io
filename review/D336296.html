@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review: D336296 - Card update doorhanger for a new or changed security code</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1d1d22; --muted: #5b5b66; --border: #d7d7db;
+    --card: #f9f9fb; --code-bg: #f0f0f4; --accent: #0061e0;
+    --high: #c50042; --med: #b45d00; --q: #6b3fd4; --nit: #5b5b66; --ok: #017a40;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1b22; --fg: #fbfbfe; --muted: #a8a8b3; --border: #3a3944;
+      --card: #23222b; --code-bg: #2b2a33; --accent: #73a7f3;
+      --high: #ff6b8f; --med: #ffb35c; --q: #b49cff; --nit: #a8a8b3; --ok: #54ffbd;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 1.6rem; line-height: 1.3; margin: 0 0 8px; }
+  h2 { font-size: 1.2rem; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 1.05rem; margin: 0 0 8px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  a { color: var(--accent); }
+  code { font: 0.88em/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  .meta { color: var(--muted); margin: 0 0 4px; }
+  .meta dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 16px 0 0; }
+  .meta dt { font-weight: 600; color: var(--fg); }
+  .meta dd { margin: 0; }
+  .summary { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin-top: 24px; }
+  .summary ul { margin: 6px 0 0; padding-left: 20px; }
+  table.counts { border-collapse: collapse; margin: 12px 0 0; }
+  table.counts td { padding: 2px 14px 2px 0; }
+  .finding { background: var(--card); border: 1px solid var(--border); border-left-width: 4px; border-radius: 8px; padding: 16px 18px; margin: 16px 0; }
+  .finding.high { border-left-color: var(--high); }
+  .finding.med { border-left-color: var(--med); }
+  .finding.q { border-left-color: var(--q); }
+  .finding.nit { border-left-color: var(--nit); }
+  .finding p { margin: 8px 0; }
+  .tag { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+  .tag.high { color: var(--high); } .tag.med { color: var(--med); } .tag.q { color: var(--q); } .tag.nit { color: var(--nit); } .tag.ok { color: var(--ok); }
+  .loc { color: var(--muted); font-size: 0.88rem; }
+  .label { font-weight: 600; }
+  ul.checks { list-style: none; padding-left: 0; }
+  ul.checks li { padding-left: 26px; position: relative; margin: 6px 0; }
+  ul.checks li::before { content: "\2713"; position: absolute; left: 4px; color: var(--ok); font-weight: 700; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); padding-top: 12px; }
+</style>
+</head>
+<body>
+<main>
+
+<p class="meta">Code review</p>
+<h1>D336296: Bug 2084804 - Update the card update doorhanger for a new or changed security code</h1>
+
+<div class="meta">
+  <dl>
+    <dt>Revision</dt><dd><a href="https://phabricator.services.mozilla.com/D336296">D336296</a> (diff 1417562)</dd>
+    <dt>Bug</dt><dd><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=2084804">bug 2084804</a></dd>
+    <dt>Author</dt><dd>Micah Killoran (mtigley)</dd>
+    <dt>Stack</dt><dd>D336187 &rarr; D336294 &rarr; <a href="https://phabricator.services.mozilla.com/D336295">D336295</a> &rarr; <strong>D336296</strong></dd>
+    <dt>Files</dt><dd>
+      <code>toolkit/components/formautofill/default/FormAutofillPrompter.sys.mjs</code><br>
+      <code>toolkit/locales/en-US/toolkit/formautofill/formAutofill.ftl</code><br>
+      <code>browser/extensions/formautofill/test/browser/creditCard/browser_creditCard_doorhanger_cvv.js</code>
+    </dd>
+    <dt>Reviewed</dt><dd>2026-10-27, against the credential-management review guidelines</dd>
+  </dl>
+</div>
+
+<section class="summary">
+  <strong>What the patch does.</strong> When a saved card is submitted with a new or changed security code,
+  a new <code>CreditCardSecurityCodeUpdateDoorhanger</code> shows a "Save security code?" doorhanger with the
+  security codes toggle. Turning the toggle off switches the doorhanger to the plain "Update payment method?"
+  content in place, and updating then keeps the stored security code.
+  <table class="counts">
+    <tr><td><span class="tag high">Should fix</span></td><td>1</td></tr>
+    <tr><td><span class="tag q">Question</span></td><td>2</td></tr>
+    <tr><td><span class="tag nit">Nit</span></td><td>4</td></tr>
+  </table>
+</section>
+
+<h2>Verified correct</h2>
+<ul class="checks">
+  <li><code>isNeeded()</code> agrees with storage: the Rust store's <code>getMatchRecords</code> compares
+    <code>cc-csc</code>, so a card whose only change is its security code reaches the prompt rather than being
+    treated as a match.</li>
+  <li>The secondary action's <code>callbackState</code> getter is read when the button is clicked
+    (<code>#createActions</code> closes over the params object), so "Save new payment method" really resolves
+    <code>create</code> after the toggle is turned off.</li>
+  <li><code>cancel_update_doorhanger</code> and <code>disable_update_doorhanger</code> already exist in
+    <code>metrics.yaml</code>, so the new Dismiss and "Never save cards" actions record valid events.</li>
+  <li>Turning the toggle off goes through <code>CreditCardSaveDoorhanger.recordToSave</code>, which drops
+    <code>cc-csc</code> while saving security codes is disabled, so the stored code is kept on update.</li>
+  <li>The new Fluent strings use hyphenated ids, flod's "Checkout" comment is applied, and the new
+    <code>##</code> section is closed by the existing bare <code>##</code>.</li>
+</ul>
+
+<h2>Findings</h2>
+
+<div class="finding high">
+  <h3><span class="tag high">Should fix</span> The header and buttons go stale when the doorhanger reopens</h3>
+  <p class="loc"><code>CreditCardSecurityCodeUpdateDoorhanger.updateNotification</code></p>
+  <p><code>updateNotification()</code> only writes the panel's attributes (<code>label</code>,
+    <code>buttonlabel</code>, <code>secondarybuttonlabel</code>, <code>dropmarkerhidden</code>).
+    <code>PopupNotifications._refreshPanel</code> resets those attributes every time the panel opens, using the
+    notification's message and action labels. Those were formatted once in <code>show()</code>, while the toggle
+    was still on. <code>_showPanel</code> also fires <code>"showing"</code> <em>before</em>
+    <code>_refreshPanel</code>, which is why the patch has to wait for <code>"shown"</code>.</p>
+  <p><span class="label">How to hit it:</span> turn the toggle off, click outside the doorhanger
+    (<code>persistWhileVisible</code> keeps the anchor icon), then click the anchor or switch tabs and come back.
+    The panel opens with "Save security code?", Save, Dismiss and the "Never save cards" dropmarker. Then
+    <code>"shown"</code> fires and corrects them, so the stale labels flash briefly.</p>
+  <p><span class="label">Suggested fix:</span> in <code>updateNotification()</code>, update the notification itself
+    (<code>panel.notification</code>: its message and the <code>label</code>/<code>accessKey</code> of
+    <code>mainAction</code> and <code>secondaryActions[0]</code>), so <code>_refreshPanel</code> applies the
+    current state on every open. Add a test that turns the toggle off, dismisses the panel, reopens it from the
+    anchor and checks the labels.</p>
+</div>
+
+<div class="finding q">
+  <h3><span class="tag q">Question</span> Turning the toggle off when only the security code changed</h3>
+  <p class="loc"><code>test_security_code_toggle_off_saves_new_card</code></p>
+  <p>In this case the doorhanger switches to the plain update content, but neither button does anything useful:</p>
+  <ul>
+    <li>"Update" changes nothing. <code>recordToSave()</code> drops <code>cc-csc</code> and every other field
+      is unchanged, so it only bumps the card's last-used time.</li>
+    <li>"Save new payment method" saves an exact copy of the stored card without a security code. The test
+      checks for this duplicate (<code>creditCards.length == 2</code>).</li>
+  </ul>
+  <p>Is this what the UX spec wants? If not, the off state may need different content when nothing but the
+    security code differs.</p>
+</div>
+
+<div class="finding q">
+  <h3><span class="tag q">Question</span> A security code submitted alongside other changes</h3>
+  <p class="loc"><code>CreditCardSecurityCodeUpdateDoorhanger.isNeeded</code></p>
+  <p><code>isNeeded()</code> only looks at the security code. A submission that changes the name or expiry
+    <em>and</em> brings a new code gets "Save security code?" with a Save button, and Save also updates those
+    other fields. The card details line shows the new values, but the header never says the card is being
+    updated.</p>
+  <p>Please confirm this is intended. The new tests only cover a change to the security code alone
+    (<code>withSecurityCodeUpdateDoorhanger</code> fills every other field from <code>TEST_CREDIT_CARD_1</code>),
+    so a test for the mixed case would help.</p>
+</div>
+
+<div class="finding nit">
+  <h3><span class="tag nit">Nit</span> The dismiss test can't catch an unexpected write</h3>
+  <p class="loc"><code>test_security_code_update_dismissed</code></p>
+  <p>The test reads storage straight after clicking Dismiss. That passes even if a write were still pending, so
+    it can't catch a regression where Dismiss starts writing. Also, nothing covers "Never save cards"
+    (<code>disable</code>) from this doorhanger.</p>
+</div>
+
+<div class="finding nit">
+  <h3><span class="tag nit">Nit</span> Duplicated <code>CONTENT</code> entry</h3>
+  <p class="loc"><code>CONTENT[CreditCardSecurityCodeUpdateDoorhanger.name]</code></p>
+  <p>The entry repeats <code>anchor</code> and <code>options</code> from the <code>CreditCardUpdateDoorhanger</code>
+    entry. Spreading that entry would evaluate its getters once at definition time, so not spreading it is right,
+    but the shared parts could become a constant.</p>
+</div>
+
+<div class="finding nit">
+  <h3><span class="tag nit">Nit</span> Comment on <code>updateNotification</code></h3>
+  <p>If the first finding is fixed, the comment can state the constraint directly, for example: "PopupNotifications
+    only formats the header and buttons when the panel opens."</p>
+</div>
+
+<div class="finding nit">
+  <h3><span class="tag nit">Nit</span> Telemetry can't separate the two update flows</h3>
+  <p>Clicks are recorded under <code>telemetryObject = "update_doorhanger"</code>, the same as the plain update
+    doorhanger, so the two flows can't be told apart. That's fine if nobody needs to tell them apart.</p>
+</div>
+
+<h2>Relevant PopupNotifications ordering</h2>
+<p>From <code>toolkit/modules/PopupNotifications.sys.mjs</code>, <code>_showPanel</code>:</p>
+<pre><code>notificationsToShow = notificationsToShow.filter(n =&gt; {
+  ...
+  let dismiss = this._fireCallback(n, NOTIFICATION_EVENT_SHOWING);
+  ...
+});
+...
+this._refreshPanel(notificationsToShow);   // sets buttonlabel, secondarybuttonlabel,
+                                           // dropmarkerhidden from n.mainAction / n.secondaryActions
+...
+this._fireCallback(n, NOTIFICATION_EVENT_SHOWN);</code></pre>
+
+<footer>
+  Not tested locally; the findings come from reading the diff, its parent D336295 and the in-tree
+  <code>PopupNotifications</code> and credit card storage code.
+</footer>
+
+</main>
+</body>
+</html>
