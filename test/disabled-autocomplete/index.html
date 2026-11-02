@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Autocomplete on fields that become disabled</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 20px; max-width: 900px; }
+  fieldset { margin-bottom: 16px; padding: 12px; }
+  legend { font-weight: bold; }
+  label { display: block; margin: 6px 0; }
+  label span { display: inline-block; width: 150px; }
+  input, textarea, select { width: 260px; }
+  .controls { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .controls button { font-size: 12px; }
+  :disabled { background: #eee; outline: 2px dashed #c00; }
+  #status { position: sticky; top: 0; background: #ffd; padding: 8px; border: 1px solid #cc9; margin-bottom: 12px; }
+  #log { height: 180px; overflow: auto; background: #111; color: #0f0; font: 12px monospace; padding: 6px; white-space: pre; }
+  .hint { color: #555; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>Autocomplete on fields that become disabled</h1>
+<p class="hint">
+  Bug 2087206 (D338545). For the focused-and-disabled cases, set
+  <code>dom.forms.retain_focus_on_disabled.enabled</code> to true.<br>
+  Steps: focus a field and open the popup (click it, or press Down), then press a
+  "disable in 3s" button and go back to the field before the timer fires. Expected: the
+  popup closes, the field stays focused, Enter and clicking an old row fill nothing,
+  and after re-enabling, Down opens the popup again.
+</p>
+
+<div id="status">activeElement: <b id="active">-</b> | timer: <b id="timer">idle</b></div>
+
+<!-- Address -->
+<fieldset id="fs-address">
+  <legend>Address (formautofill)</legend>
+  <form id="form-address" action="#" onsubmit="return false">
+    <label><span>Name</span><input id="addr-name" name="name" autocomplete="name"></label>
+    <label><span>Organization</span><input id="addr-org" name="organization" autocomplete="organization"></label>
+    <label><span>Street (input)</span><input id="addr-street" name="street-address" autocomplete="street-address"></label>
+    <label><span>City</span><input id="addr-city" name="address-level2" autocomplete="address-level2"></label>
+    <label><span>State</span><input id="addr-state" name="address-level1" autocomplete="address-level1"></label>
+    <label><span>Postal code</span><input id="addr-zip" name="postal-code" autocomplete="postal-code"></label>
+    <label><span>Country</span>
+      <select id="addr-country" name="country" autocomplete="country">
+        <option value="US">United States</option>
+        <option value="CA">Canada</option>
+        <option value="DE">Germany</option>
+        <option value="FR">France</option>
+      </select>
+    </label>
+    <label><span>Email</span><input id="addr-email" type="email" name="email" autocomplete="email"></label>
+    <label><span>Phone</span><input id="addr-tel" type="tel" name="tel" autocomplete="tel"></label>
+    <button type="submit">Submit</button>
+  </form>
+  <div class="controls" data-fieldset="fs-address" data-target="addr-name"></div>
+</fieldset>
+
+<!-- Address with textarea street -->
+<fieldset id="fs-address-ta">
+  <legend>Address with a textarea street field</legend>
+  <form id="form-address-ta" action="#" onsubmit="return false">
+    <label><span>Name</span><input id="ta-name" name="name" autocomplete="name"></label>
+    <label><span>Street (textarea)</span><textarea id="ta-street" name="street-address" autocomplete="street-address" rows="2"></textarea></label>
+    <label><span>City</span><input id="ta-city" name="address-level2" autocomplete="address-level2"></label>
+    <label><span>Postal code</span><input id="ta-zip" name="postal-code" autocomplete="postal-code"></label>
+    <label><span>Country</span><input id="ta-country" name="country" autocomplete="country"></label>
+    <button type="submit">Submit</button>
+  </form>
+  <div class="controls" data-fieldset="fs-address-ta" data-target="ta-street"></div>
+</fieldset>
+
+<!-- Credit card -->
+<fieldset id="fs-cc">
+  <legend>Credit card (formautofill)</legend>
+  <form id="form-cc" action="#" onsubmit="return false">
+    <label><span>Name on card</span><input id="cc-name" name="cc-name" autocomplete="cc-name"></label>
+    <label><span>Card number</span><input id="cc-number" name="cc-number" autocomplete="cc-number" inputmode="numeric"></label>
+    <label><span>Exp month</span><input id="cc-exp-month" name="cc-exp-month" autocomplete="cc-exp-month"></label>
+    <label><span>Exp year</span><input id="cc-exp-year" name="cc-exp-year" autocomplete="cc-exp-year"></label>
+    <label><span>CVV</span><input id="cc-csc" name="cc-csc" autocomplete="cc-csc"></label>
+    <button type="submit">Submit</button>
+  </form>
+  <div class="controls" data-fieldset="fs-cc" data-target="cc-number"></div>
+</fieldset>
+
+<!-- Login -->
+<fieldset id="fs-login">
+  <legend>Login (password manager)</legend>
+  <form id="form-login" action="#" onsubmit="return false">
+    <label><span>Username</span><input id="login-user" name="username" autocomplete="username"></label>
+    <label><span>Password</span><input id="login-pass" type="password" name="password" autocomplete="current-password"></label>
+    <button type="submit">Log in</button>
+  </form>
+  <div class="controls" data-fieldset="fs-login" data-target="login-user"></div>
+  <div class="controls" data-fieldset="fs-login" data-target="login-pass"></div>
+</fieldset>
+
+<!-- Signup (password generation) -->
+<fieldset id="fs-signup">
+  <legend>Sign up (password generation / Relay)</legend>
+  <form id="form-signup" action="#" onsubmit="return false">
+    <label><span>Email</span><input id="signup-email" type="email" name="email" autocomplete="username"></label>
+    <label><span>New password</span><input id="signup-pass" type="password" name="new-password" autocomplete="new-password"></label>
+    <label><span>Confirm password</span><input id="signup-pass2" type="password" name="confirm-password" autocomplete="new-password"></label>
+    <button type="submit">Sign up</button>
+  </form>
+  <div class="controls" data-fieldset="fs-signup" data-target="signup-pass"></div>
+</fieldset>
+
+<!-- Datalist -->
+<fieldset id="fs-datalist">
+  <legend>Datalist / form history</legend>
+  <form id="form-datalist" action="#" onsubmit="return false">
+    <label><span>Fruit (datalist)</span><input id="dl-fruit" name="fruit" list="fruits"></label>
+    <label><span>Search (history)</span><input id="dl-history" name="searchbar-history"></label>
+    <button type="submit">Submit</button>
+  </form>
+  <datalist id="fruits">
+    <option value="Apple"></option>
+    <option value="Apricot"></option>
+    <option value="Banana"></option>
+    <option value="Blueberry"></option>
+    <option value="Cherry"></option>
+    <option value="Grape"></option>
+  </datalist>
+  <div class="controls" data-fieldset="fs-datalist" data-target="dl-fruit"></div>
+  <div class="controls" data-fieldset="fs-datalist" data-target="dl-history"></div>
+</fieldset>
+
+<p>
+  <button id="enable-all">Re-enable everything</button>
+  <button id="clear-log">Clear log</button>
+</p>
+<div id="log"></div>
+
+<script>
+const DELAY_MS = 3000;
+const logEl = document.getElementById("log");
+const activeEl = document.getElementById("active");
+const timerEl = document.getElementById("timer");
+
+function log(msg) {
+  const t = new Date().toISOString().slice(11, 23);
+  logEl.textContent += `${t}  ${msg}\n`;
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function describe(el) {
+  if (!el || el === document.body) return "body";
+  return el.id ? `#${el.id}` : el.tagName.toLowerCase();
+}
+
+function updateActive() {
+  const el = document.activeElement;
+  activeEl.textContent = `${describe(el)}${el && el.disabled ? " (disabled)" : ""}`;
+}
+setInterval(updateActive, 200);
+
+function setDisabled(el, value) {
+  el.disabled = value;
+  log(`${describe(el)}.disabled = ${value} (activeElement: ${describe(document.activeElement)})`);
+  updateActive();
+}
+
+function later(label, fn) {
+  let left = DELAY_MS / 1000;
+  timerEl.textContent = `${label} in ${left}s`;
+  const id = setInterval(() => {
+    left--;
+    if (left > 0) {
+      timerEl.textContent = `${label} in ${left}s`;
+      return;
+    }
+    clearInterval(id);
+    timerEl.textContent = "idle";
+    fn();
+  }, 1000);
+}
+
+function button(container, text, fn) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = text;
+  // Keep focus on the field when the button is clicked with the mouse.
+  b.addEventListener("mousedown", e => e.preventDefault());
+  b.addEventListener("click", fn);
+  container.appendChild(b);
+}
+
+for (const c of document.querySelectorAll(".controls")) {
+  const fs = document.getElementById(c.dataset.fieldset);
+  const target = document.getElementById(c.dataset.target);
+  const name = describe(target);
+  button(c, `Disable ${name} in 3s`, () => later(`disable ${name}`, () => setDisabled(target, true)));
+  button(c, `Disable fieldset in 3s (focus ${name})`, () => {
+    target.focus();
+    later(`disable ${describe(fs)}`, () => setDisabled(fs, true));
+  });
+  button(c, `Disable ${name} then re-enable after 3s more`, () =>
+    later(`disable ${name}`, () => {
+      setDisabled(target, true);
+      later(`re-enable ${name}`, () => setDisabled(target, false));
+    })
+  );
+  button(c, `Enable ${name}`, () => setDisabled(target, false));
+  button(c, "Enable fieldset", () => setDisabled(fs, false));
+}
+
+document.getElementById("enable-all").addEventListener("click", () => {
+  for (const el of document.querySelectorAll("fieldset, input, textarea, select")) {
+    el.disabled = false;
+  }
+  log("everything re-enabled");
+});
+document.getElementById("clear-log").addEventListener("click", () => (logEl.textContent = ""));
+
+for (const type of ["focusin", "focusout", "input", "change"]) {
+  document.addEventListener(type, e => {
+    if (!e.target.matches?.("input, textarea, select")) return;
+    const extra = type === "input" || type === "change" ? ` value="${e.target.value}"` : "";
+    log(`${type} ${describe(e.target)}${e.target.disabled ? " (disabled)" : ""}${extra}`);
+  });
+}
+for (const f of document.forms) {
+  f.addEventListener("submit", () => log(`submit #${f.id}`));
+}
+</script>
+</body>
+</html>
