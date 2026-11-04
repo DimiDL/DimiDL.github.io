@@ -1,6 +1,6 @@
 {
   "title": "Browser window ESM migration",
-  "metaBug": 2045664,
+  "metaBug": 2088886,
   "linesFrom": "0e53f4914e3fb 2026-11-03",
   "groups": [
     {

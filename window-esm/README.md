@@ -2,7 +2,7 @@
 
 Tracks porting the legacy `.js` browser-window category consumers in
 `browser/components/BrowserComponents.manifest` to ES modules
-(meta bug 2045664).
+(meta bug 2088886, part of meta bug 2045664).
 
 `index.html` is a static page. It reads `data.json` and, on every load, fetches
 the status, assignee and resolution date of every listed bug from the Bugzilla
