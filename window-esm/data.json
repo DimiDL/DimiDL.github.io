@@ -2,179 +2,308 @@
   "title": "Browser window ESM migration",
   "metaBug": 2045664,
   "linesFrom": "0e53f4914e3fb 2026-11-03",
+  "groups": [
+    {
+      "id": "onBeforeInitialXULLayout",
+      "bug": 2019544
+    },
+    {
+      "id": "onDOMContentLoaded",
+      "bug": 2032816
+    },
+    {
+      "id": "onLoad",
+      "bug": 2036714
+    },
+    {
+      "id": "onLocationChange",
+      "bug": 2039199
+    },
+    {
+      "id": "_delayedStartup",
+      "bug": 2045665
+    },
+    {
+      "id": "_schedulePerWindowIdleTasks",
+      "bug": 2052772
+    }
+  ],
   "items": [
     {
       "path": "browser/base/content/browser.js",
       "object": "gUIDensity",
       "lines": 313,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onLoad"
+      ]
     },
     {
       "path": "browser/base/content/browser.js",
       "object": "Win10TabletModeUpdater",
       "lines": 26,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onLoad"
+      ]
     },
     {
       "path": "browser/base/content/browser.js",
       "object": "CombinedStopReload",
       "lines": 131,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onLoad"
+      ]
     },
     {
       "path": "browser/base/content/browser.js",
       "object": "FirefoxViewHandler",
       "lines": 144,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onDOMContentLoaded"
+      ]
     },
     {
       "path": "browser/base/content/browser.js",
       "object": "BrowserOffline",
       "lines": 68,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/base/content/browser.js",
       "object": "gRestoreLastSessionObserver",
       "lines": 6,
       "bug": null,
-      "note": "Lazy getter around RestoreLastSessionObserver in SessionWindowUI.sys.mjs"
+      "note": "Lazy getter around RestoreLastSessionObserver in SessionWindowUI.sys.mjs",
+      "functions": [
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/base/content/browser.js",
       "object": "PanicButtonNotifier",
       "lines": 64,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/base/content/browser.js",
       "object": "gReduceMotionManager",
       "lines": 15,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_schedulePerWindowIdleTasks"
+      ]
     },
     {
       "path": "browser/base/content/browser.js",
       "object": "Win7Features",
       "lines": 28,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_schedulePerWindowIdleTasks"
+      ]
     },
     {
       "path": "browser/base/content/browser-sync.js",
       "lines": 4322,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_schedulePerWindowIdleTasks"
+      ]
     },
     {
       "path": "browser/base/content/browser-addons.js",
       "lines": 3405,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onDOMContentLoaded",
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/base/content/browser-siteProtections.js",
       "lines": 2996,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onLocationChange",
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/base/content/browser-trustPanel.js",
       "lines": 2435,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/base/content/browser-places.js",
       "lines": 2406,
       "bug": null,
-      "note": "Also loaded by the Library window and the macOS hidden window"
+      "note": "Also loaded by the Library window and the macOS hidden window",
+      "functions": [
+        "onLocationChange",
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/base/content/browser-fullScreenAndPointerLock.js",
       "lines": 1284,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/base/content/browser-sitePermissionPanel.js",
       "lines": 1269,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onLocationChange"
+      ]
     },
     {
       "path": "browser/base/content/browser-gestureSupport.js",
       "lines": 1061,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_schedulePerWindowIdleTasks"
+      ]
     },
     {
       "path": "browser/base/content/browser-pageActions.js",
       "lines": 1009,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onLoad",
+        "onLocationChange"
+      ]
     },
     {
       "path": "browser/base/content/browser-profiles.js",
       "lines": 840,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_schedulePerWindowIdleTasks"
+      ]
     },
     {
       "path": "browser/base/content/browser-toolbarKeyNav.js",
       "lines": 462,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onLoad"
+      ]
     },
     {
       "path": "browser/base/content/browser-captivePortal.js",
       "lines": 406,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onLoad",
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/base/content/browser-thumbnails.js",
       "lines": 226,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_schedulePerWindowIdleTasks"
+      ]
     },
     {
       "path": "browser/base/content/browser-customization.js",
       "lines": 181,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onBeforeInitialXULLayout"
+      ]
     },
     {
       "path": "browser/base/content/browser-data-submission-info-bar.js",
       "lines": 123,
       "bug": null,
-      "note": "MOZ_DATA_REPORTING builds only"
+      "note": "MOZ_DATA_REPORTING builds only",
+      "functions": [
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/base/content/browser-graphics-utils.js",
       "lines": 86,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_schedulePerWindowIdleTasks"
+      ]
     },
     {
       "path": "browser/base/content/browser-customtitlebar.js",
       "lines": 79,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onBeforeInitialXULLayout"
+      ]
     },
     {
       "path": "browser/base/content/browser-development-helpers.js",
       "lines": 45,
       "bug": null,
-      "note": "Non-MOZILLA_OFFICIAL builds only"
+      "note": "Non-MOZILLA_OFFICIAL builds only",
+      "functions": [
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/components/sidebar/browser-sidebar.js",
       "lines": 3003,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onLoad",
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/components/customizableui/content/panelUI.js",
       "lines": 1434,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/components/tabbrowser/content/browser-ctrlTab.js",
       "lines": 858,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/components/tabbrowser/content/browser-fullZoom.js",
       "lines": 704,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "_delayedStartup"
+      ]
     },
     {
       "path": "browser/components/downloads/content/indicator.js",
       "lines": 688,
-      "bug": null
+      "bug": null,
+      "functions": [
+        "onLoad",
+        "_delayedStartup"
+      ]
     }
   ]
 }

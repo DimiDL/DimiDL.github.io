@@ -41,6 +41,15 @@
   .st-assigned { background: #deeaff; color: #0047b3; }
   .st-filed { background: #fff4de; color: #8a4a00; }
   .st-none { background: #f0f0f4; color: var(--faint); }
+  tr.group td { padding-top: 22px; border-bottom: 1px solid #d7d7de; }
+  tr.group code { font-weight: 700; font-size: 14px; }
+  .gcount { margin-left: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .gbar { display: inline-flex; width: 90px; height: 6px; margin-left: 8px; border-radius: 3px; overflow: hidden; background: var(--none); vertical-align: middle; }
+  .gbar span { display: block; }
+  .gbug { float: right; font-size: 12px; color: var(--muted); }
+  tr.repeat td, tr.repeat a, tr.repeat .dir, tr.repeat .pill { color: var(--faint); }
+  tr.repeat .pill { background: #f4f4f6; }
+  tr.repeat .obj { font-weight: 400; }
   footer { margin-top: 18px; font-size: 12px; color: var(--faint); }
   @media (max-width: 760px) { .charts { flex-direction: column; } }
 </style>
@@ -208,33 +217,50 @@ function renderBurndown(items) {
     `<text x="${x(now) - 8}" y="${y(remaining) - 8}" text-anchor="end" font-size="12" font-weight="600" fill="var(--fg)">${remaining} remaining</text>`;
 }
 
-function renderRows(items) {
-  const sorted = [...items].sort(
-    (a, b) => SORT_ORDER[a.state] - SORT_ORDER[b.state] || b.lines - a.lines
-  );
-  $("rows").innerHTML = sorted
-    .map(item => {
-      const slash = item.path.lastIndexOf("/") + 1;
-      const file = `<a href="${SEARCHFOX}${esc(item.path)}"><code><span class="dir">${esc(item.path.slice(0, slash))}</span>${esc(item.path.slice(slash))}</code></a>`;
-      const obj = item.object ? ` <code class="obj">${esc(item.object)}</code>` : "";
-      const note = item.note ? `<div class="note">${esc(item.note)}</div>` : "";
-      const b = item.bugData;
-      const bug = item.bug
-        ? `<a href="${BUGZILLA}/show_bug.cgi?id=${item.bug}"${b ? ` title="${esc(b.summary)}"` : ""}>bug ${item.bug}</a>`
-        : `<span class="muted">not filed</span>`;
-      let status;
-      if (!item.bug) {
-        status = `<span class="pill st-none">no bug</span>`;
-      } else if (!b) {
-        status = `<span class="muted">unknown</span>`;
-      } else {
-        status = `<span class="pill st-${item.state}">${esc(b.status)}${b.resolution ? " " + esc(b.resolution) : ""}</span>`;
-      }
-      const who = esc(assigneeName(b));
-      const fixed = item.state == "fixed" && b.cf_last_resolved ? fmtDate(new Date(b.cf_last_resolved)) : "";
-      return `<tr><td>${file}${obj}${note}</td><td class="num">${item.lines.toLocaleString("en-US")}</td><td>${bug}</td><td>${status}</td><td>${who}</td><td class="date">${fixed}</td></tr>`;
-    })
-    .join("");
+function renderRow(item, firstGroup) {
+  const slash = item.path.lastIndexOf("/") + 1;
+  const file = `<a href="${SEARCHFOX}${esc(item.path)}"><code><span class="dir">${esc(item.path.slice(0, slash))}</span>${esc(item.path.slice(slash))}</code></a>`;
+  const obj = item.object ? ` <code class="obj">${esc(item.object)}</code>` : "";
+  const repeat = firstGroup ? `<div class="note">Listed above under <code>${esc(firstGroup)}</code></div>` : "";
+  const note = !firstGroup && item.note ? `<div class="note">${esc(item.note)}</div>` : "";
+  const b = item.bugData;
+  const bug = item.bug
+    ? `<a href="${BUGZILLA}/show_bug.cgi?id=${item.bug}"${b ? ` title="${esc(b.summary)}"` : ""}>bug ${item.bug}</a>`
+    : `<span class="muted">not filed</span>`;
+  let status;
+  if (!item.bug) {
+    status = `<span class="pill st-none">no bug</span>`;
+  } else if (!b) {
+    status = `<span class="muted">unknown</span>`;
+  } else {
+    status = `<span class="pill st-${item.state}">${esc(b.status)}${b.resolution ? " " + esc(b.resolution) : ""}</span>`;
+  }
+  const who = esc(assigneeName(b));
+  const fixed = item.state == "fixed" && b.cf_last_resolved ? fmtDate(new Date(b.cf_last_resolved)) : "";
+  return `<tr${firstGroup ? ' class="repeat"' : ""}><td>${file}${obj}${repeat}${note}</td><td class="num">${item.lines.toLocaleString("en-US")}</td><td>${bug}</td><td>${status}</td><td>${who}</td><td class="date">${fixed}</td></tr>`;
+}
+
+function renderRows(groups, items) {
+  const byStatus = (a, b) => SORT_ORDER[a.state] - SORT_ORDER[b.state] || b.lines - a.lines;
+  let html = "";
+  for (const group of groups) {
+    const members = items.filter(i => i.functions.includes(group.id));
+    const own = members.filter(i => i.firstGroup == group.id).sort(byStatus);
+    const repeats = members.filter(i => i.firstGroup != group.id).sort(byStatus);
+    const done = own.filter(i => i.state == "fixed").length;
+    const bar = STATES.map(s => {
+      const n = own.filter(i => i.state == s.key).length;
+      return n ? `<span style="width:${(100 * n) / own.length}%;background:${s.color}"></span>` : "";
+    }).join("");
+    const extra = repeats.length ? ` <span class="muted">+${repeats.length} listed above</span>` : "";
+    html +=
+      `<tr class="group"><td colspan="6"><code>gBrowserInit.${esc(group.id)}</code>` +
+      ` <span class="gcount">${done} / ${own.length}</span><span class="gbar">${bar}</span>${extra}` +
+      `<span class="gbug">ported in <a href="${BUGZILLA}/show_bug.cgi?id=${group.bug}">bug ${group.bug}</a></span></td></tr>`;
+    html += own.map(i => renderRow(i, null)).join("");
+    html += repeats.map(i => renderRow(i, i.firstGroup)).join("");
+  }
+  $("rows").innerHTML = html;
 }
 
 async function main() {
@@ -253,13 +279,14 @@ async function main() {
 
   const items = data.items.map(i => {
     const bugData = i.bug ? bugs.get(i.bug) : null;
-    return { ...i, bugData, state: i.bug && !bugData ? "filed" : classify(bugData) };
+    const firstGroup = data.groups.find(g => i.functions.includes(g.id)).id;
+    return { ...i, bugData, firstGroup, state: i.bug && !bugData ? "filed" : classify(bugData) };
   });
 
   renderSummary(data, items);
   renderDonut(items);
   renderBurndown(items);
-  renderRows(items);
+  renderRows(data.groups, items);
   window.addEventListener("resize", () => renderBurndown(items));
 
   const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

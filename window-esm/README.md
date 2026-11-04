@@ -15,6 +15,14 @@ Set the item's `bug` field in `data.json` to the bug number and push. Any
 RESOLVED or VERIFIED bug counts as done; the burndown is built from each bug's
 `cf_last_resolved` date.
 
+## Grouping
+
+The table is grouped by the `gBrowserInit` function each consumer is invoked
+from, in the order listed in `groups` (the order the functions were ported to
+category-manager invocation). An item's `functions` lists every function that
+calls it; the item is counted under the first one, and repeated in grey under
+the rest.
+
 ## Refreshing line counts
 
     ./update-lines.py /path/to/gecko --rev origin/bookmarks/central
