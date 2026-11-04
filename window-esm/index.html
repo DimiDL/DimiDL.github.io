@@ -46,9 +46,7 @@
   .gcount { margin-left: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .gbar { display: inline-flex; width: 90px; height: 6px; margin-left: 8px; border-radius: 3px; overflow: hidden; background: var(--none); vertical-align: middle; }
   .gbar span { display: block; }
-  .gbug { float: right; font-size: 12px; color: var(--muted); }
-  tr.repeat td, tr.repeat a, tr.repeat .dir, tr.repeat .pill { color: var(--faint); }
-  tr.repeat .pill { background: #f4f4f6; }
+  tr.repeat td, tr.repeat a, tr.repeat .dir { color: var(--faint); }
   tr.repeat .obj { font-weight: 400; }
   footer { margin-top: 18px; font-size: 12px; color: var(--faint); }
   @media (max-width: 760px) { .charts { flex-direction: column; } }
@@ -138,7 +136,7 @@ function renderSummary(data, items) {
   const done = items.filter(i => i.state == "fixed").length;
   const ids = items.filter(i => i.bug).map(i => i.bug);
   const listLink = ids.length
-    ? ` &middot; <a href="${BUGZILLA}/buglist.cgi?bug_id=${ids.join(",")}">all ${ids.length} bugs in Bugzilla</a>`
+    ? ` &middot; <a href="${BUGZILLA}/buglist.cgi?bug_id=${ids.join(",")}">${ids.length == 1 ? "1 bug" : `all ${ids.length} bugs`} in Bugzilla</a>`
     : "";
   $("summary").innerHTML =
     `Meta <a href="${BUGZILLA}/show_bug.cgi?id=${data.metaBug}">bug ${data.metaBug}</a>` +
@@ -237,7 +235,10 @@ function renderRow(item, firstGroup) {
   }
   const who = esc(assigneeName(b));
   const fixed = item.state == "fixed" && b.cf_last_resolved ? fmtDate(new Date(b.cf_last_resolved)) : "";
-  return `<tr${firstGroup ? ' class="repeat"' : ""}><td>${file}${obj}${repeat}${note}</td><td class="num">${item.lines.toLocaleString("en-US")}</td><td>${bug}</td><td>${status}</td><td>${who}</td><td class="date">${fixed}</td></tr>`;
+  if (firstGroup) {
+    return `<tr class="repeat"><td colspan="6">${file}${obj}${repeat}</td></tr>`;
+  }
+  return `<tr><td>${file}${obj}${note}</td><td class="num">${item.lines.toLocaleString("en-US")}</td><td>${bug}</td><td>${status}</td><td>${who}</td><td class="date">${fixed}</td></tr>`;
 }
 
 function renderRows(groups, items) {
@@ -255,8 +256,7 @@ function renderRows(groups, items) {
     const extra = repeats.length ? ` <span class="muted">+${repeats.length} listed above</span>` : "";
     html +=
       `<tr class="group"><td colspan="6"><code>gBrowserInit.${esc(group.id)}</code>` +
-      ` <span class="gcount">${done} / ${own.length}</span><span class="gbar">${bar}</span>${extra}` +
-      `<span class="gbug">ported in <a href="${BUGZILLA}/show_bug.cgi?id=${group.bug}">bug ${group.bug}</a></span></td></tr>`;
+      ` <span class="gcount">${done} / ${own.length}</span><span class="gbar">${bar}</span>${extra}</td></tr>`;
     html += own.map(i => renderRow(i, null)).join("");
     html += repeats.map(i => renderRow(i, i.firstGroup)).join("");
   }

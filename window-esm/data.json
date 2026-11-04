@@ -4,28 +4,22 @@
   "linesFrom": "0e53f4914e3fb 2026-11-03",
   "groups": [
     {
-      "id": "onBeforeInitialXULLayout",
-      "bug": 2019544
+      "id": "onBeforeInitialXULLayout"
     },
     {
-      "id": "onDOMContentLoaded",
-      "bug": 2032816
+      "id": "onDOMContentLoaded"
     },
     {
-      "id": "onLoad",
-      "bug": 2036714
+      "id": "onLoad"
     },
     {
-      "id": "onLocationChange",
-      "bug": 2039199
+      "id": "onLocationChange"
     },
     {
-      "id": "_delayedStartup",
-      "bug": 2045665
+      "id": "_delayedStartup"
     },
     {
-      "id": "_schedulePerWindowIdleTasks",
-      "bug": 2052772
+      "id": "_schedulePerWindowIdleTasks"
     }
   ],
   "items": [
