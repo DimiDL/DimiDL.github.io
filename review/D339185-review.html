@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review summary — D339185 (Bug 2071888)</title>
+<style>
+  :root {
+    --bg: #fbfbfe; --fg: #15141a; --muted: #5b5b66; --card: #ffffff; --border: #e0e0e6;
+    --code-bg: #f0f0f4; --accent: #0061e0;
+    --imp: #c50042; --imp-bg: #ffe8ef;
+    --q: #8a4d00; --q-bg: #fff4de;
+    --sug: #0061e0; --sug-bg: #e5f0ff;
+    --nit: #5b5b66; --nit-bg: #ededf0;
+    --ok: #017a40; --ok-bg: #e3f7ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1b22; --fg: #fbfbfe; --muted: #a8a8b3; --card: #2b2a33; --border: #3f3e46;
+      --code-bg: #23222b; --accent: #80bfff;
+      --imp: #ff8aa8; --imp-bg: #4a1a28;
+      --q: #ffd27a; --q-bg: #45360f;
+      --sug: #80bfff; --sug-bg: #1a3350;
+      --nit: #c9c9d1; --nit-bg: #3a3944;
+      --ok: #6be3a5; --ok-bg: #133a27;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  h2 { font-size: 1.2rem; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 1.02rem; margin: 0; }
+  a { color: var(--accent); }
+  code { font: 0.88em ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; font: 0.85em/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  pre code { background: none; padding: 0; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .meta { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 0.92rem; }
+  .meta dt { color: var(--muted); }
+  .meta dd { margin: 0; }
+  .verdict {
+    display: flex; gap: 16px; align-items: center; margin: 24px 0 8px;
+    background: var(--card); border: 1px solid var(--border); border-left: 5px solid var(--imp);
+    border-radius: 8px; padding: 16px 18px;
+  }
+  .verdict strong { font-size: 1.1rem; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+  .tile { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .tile .n { font-size: 1.7rem; font-weight: 650; line-height: 1.1; }
+  .tile .l { color: var(--muted); font-size: 0.85rem; }
+  .finding {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 18px; margin: 12px 0;
+  }
+  .finding header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .finding p { margin: 6px 0; }
+  .loc { color: var(--muted); font-size: 0.85rem; }
+  .pill { font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .imp { color: var(--imp); background: var(--imp-bg); }
+  .q { color: var(--q); background: var(--q-bg); }
+  .sug { color: var(--sug); background: var(--sug-bg); }
+  .nit { color: var(--nit); background: var(--nit-bg); }
+  .ok { color: var(--ok); background: var(--ok-bg); }
+  .src { font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); }
+  .src.both { border-color: var(--accent); color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.82rem; }
+  tr:last-child td { border-bottom: none; }
+  td.c { text-align: center; }
+  ul.good li { margin: 4px 0; }
+  .note { color: var(--muted); font-size: 0.88rem; }
+  @media (max-width: 640px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Review summary: D339185</h1>
+<p class="sub">Bug 2071888: Add <code>nsIUrlClassifierRealTimeKeyService</code>, which fetches the OHTTP key config for Safe Browsing V5 real-time mode</p>
+
+<dl class="meta">
+  <dt>Revision</dt><dd><a href="https://phabricator.services.mozilla.com/D339185">D339185</a> (Needs Review, r?dimi)</dd>
+  <dt>Bug</dt><dd><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=2071888">2071888</a></dd>
+  <dt>Module</dt><dd>URL Classifier (<code>toolkit/components/url-classifier/</code>)</dd>
+  <dt>Size</dt><dd>6 files, ~240 added lines (new JS service, IDL, xpcshell test, build/registration entries)</dd>
+  <dt>Review tools</dt><dd>① Firefox module review, using a skill generated from <code>anti-tracking-reviewers-rotation</code> history &nbsp;·&nbsp; ② <code>/agent-skills:review</code> (five-axis review)</dd>
+  <dt>Checked against</dt><dd>mozilla-central at <code>fa06514c63489</code> (2026-10-28)</dd>
+</dl>
+
+<div class="verdict">
+  <span class="pill imp">Request changes</span>
+  <div><strong>Close to landable.</strong> One issue needs fixing first: a failed first load is never retried. Everything else is a question or an optional suggestion.</div>
+</div>
+
+<div class="tiles">
+  <div class="tile"><div class="n" style="color:var(--imp)">1</div><div class="l">Important</div></div>
+  <div class="tile"><div class="n" style="color:var(--q)">2</div><div class="l">Questions for the author</div></div>
+  <div class="tile"><div class="n" style="color:var(--sug)">3</div><div class="l">Suggestions</div></div>
+  <div class="tile"><div class="n" style="color:var(--nit)">3</div><div class="l">Nits</div></div>
+</div>
+
+<h2>Findings</h2>
+<p class="note">Line numbers are in the new file <code>UrlClassifierRealTimeKeyService.sys.mjs</code> unless another file is named. Tags show which review tool raised each finding.</p>
+
+<!-- 1 -->
+<article class="finding">
+  <header>
+    <span class="pill imp">Important</span>
+    <h3>1. A failed first load is never retried</h3>
+    <span class="src both">Both tools</span>
+  </header>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:64–92 · correctness</div>
+  <p><code>#initPromise</code> is set only once. If <code>rs.get()</code> throws, the error is logged, <code>#config</code> stays <code>null</code>, and the promise still resolves. Every later <code>getKeyConfig()</code> returns <code>null</code> without retrying. Recovery only comes from the next <code>sync</code> event: a push broadcast or the 24h poll (<code>services.settings.poll_interval</code> = 86400).</p>
+  <p>This is most likely on a fresh profile that is offline the first time a real-time check runs. With an empty local DB and no dump, <code>get()</code> has to go to the network.</p>
+  <p><strong>Fix:</strong> register the <code>sync</code> listener only once, and clear <code>#initPromise</code> when <code>get()</code> fails so the next call retries. Add a test where <code>get()</code> rejects first and then succeeds.</p>
+<pre><code>#listening = false;
+#synced = false;
+
+async #init() {
+  let rs = lazy.RemoteSettings(COLLECTION_NAME);
+  if (!this.#listening) {
+    this.#listening = true;
+    rs.on("sync", ({ data: { current } }) => {
+      this.#synced = true;
+      // ...unchanged...
+    });
+  }
+
+  let records;
+  try {
+    records = await rs.get();
+  } catch (e) {
+    console.warn(`Failed to load ${COLLECTION_NAME}`, e);
+    this.#initPromise = null;
+    return;
+  }
+  if (!this.#synced) {
+    this.#config = parseKeyConfig(records);
+  }
+}</code></pre>
+</article>
+
+<!-- 2 -->
+<article class="finding">
+  <header>
+    <span class="pill q">Question</span>
+    <h3>2. The first call on a fresh profile waits on the network</h3>
+    <span class="src both">Both tools</span>
+  </header>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:83–88 · performance</div>
+  <p>There is no <code>safebrowsing-v5-rt-key</code> dump in <code>services/settings/dumps/main</code>. When the local DB is empty, <code>get()</code> runs <code>pullStartupBundle()</code> and then a full <code>sync()</code> before it resolves. The first real-time lookup therefore waits on a network round trip.</p>
+  <p><strong>Ask:</strong> is a dump planned? If not, does the caller fall back (for example, to local-list mode) when the key is slow to arrive or <code>null</code>? Either answer is fine, but it should be written down in the bug.</p>
+</article>
+
+<!-- 3 -->
+<article class="finding">
+  <header>
+    <span class="pill q">Question</span>
+    <h3>3. A malformed record replaces a working key with null</h3>
+    <span class="src both">Both tools</span>
+  </header>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:76–81 · correctness</div>
+  <p>If an invalid <code>latest</code> record is published, the service drops the last good key, sets <code>null</code>, and fires <code>safebrowsing-realtime-key-changed</code>. That is probably right, because a rotated key may already be invalid on the server. Please confirm it is intended and that consumers handle <code>null</code> after the notification.</p>
+</article>
+
+<!-- 4 -->
+<article class="finding">
+  <header>
+    <span class="pill sug">Suggestion</span>
+    <h3>4. Every caller gets the same mutable <code>Uint8Array</code></h3>
+    <span class="src">Five-axis review</span>
+  </header>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:67 · correctness</div>
+  <p><code>getKeyConfig()</code> returns the cached <code>#config</code> instance itself. If a JS consumer changes it in place (for example, zeroing it after use), the cached key is corrupted. The next <code>isSameConfig</code> check then compares against bad data. C++ callers are not affected, because XPConnect copies the array.</p>
+<pre><code>return this.#config?.slice() ?? null;</code></pre>
+</article>
+
+<!-- 5 -->
+<article class="finding">
+  <header>
+    <span class="pill sug">Suggestion</span>
+    <h3>5. Test coverage gaps</h3>
+    <span class="src both">Both tools</span>
+  </header>
+  <div class="loc">tests/unit/test_realtime_key_service.js · correctness</div>
+  <ul>
+    <li>No test where <code>get()</code> fails or the DB is empty. This is the path in finding 1.</li>
+    <li>No test for a <code>sync</code> arriving while <code>get()</code> is still pending, which is the case the <code>synced</code> flag exists for. Make <code>get()</code> wait on a promise and emit <code>sync</code> in the meantime.</li>
+    <li>The tasks depend on each other's state through the singleton service. Add a short comment at the top of the file so anyone adding a task in the middle knows.</li>
+  </ul>
+</article>
+
+<!-- 6 -->
+<article class="finding">
+  <header>
+    <span class="pill sug">Suggestion</span>
+    <h3>6. Explain why the <code>synced</code> flag exists</h3>
+    <span class="src">Five-axis review</span>
+  </header>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:72–90 · readability</div>
+  <p>A <code>sync</code> event that fires while <code>get()</code> is pending has newer records than <code>get()</code> will return, so it must win. That is not obvious from the code, and someone simplifying it later could bring the race back. Suggested comment:</p>
+<pre><code>// A "sync" event that fires while get() is pending carries newer records
+// than get() will return.</code></pre>
+</article>
+
+<!-- 7 -->
+<article class="finding">
+  <header>
+    <span class="pill nit">Nit</span>
+    <h3>7. Validation only checks the first byte</h3>
+    <span class="src">Module review</span>
+  </header>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:41 · correctness</div>
+  <p>The only structural check is <code>config[0] == key_id</code>, so a truncated config is accepted. This is fine if the OHTTP layer rejects it later. A cheap minimum-length check here would fail earlier and log a clearer warning.</p>
+</article>
+
+<!-- 8 -->
+<article class="finding">
+  <header>
+    <span class="pill nit">Nit</span>
+    <h3>8. Document the byte layout in <code>makeKeyConfig</code></h3>
+    <span class="src">Five-axis review</span>
+  </header>
+  <div class="loc">tests/unit/test_realtime_key_service.js:18–31 · readability</div>
+  <p>Add a one-line comment giving the layout: key_id, KEM <code>0x0020</code> (X25519), 32-byte public key, cipher-suite length 4, KDF 1, AEAD 1. Readers can then check it against RFC 9458 §3.1.</p>
+</article>
+
+<!-- 9 -->
+<article class="finding">
+  <header>
+    <span class="pill nit">Nit</span>
+    <h3>9. The topic can fire before the first <code>getKeyConfig()</code> resolves</h3>
+    <span class="src">Module review</span>
+  </header>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:73–81 · FYI</div>
+  <p>If a sync arrives during init, observers are notified before the first caller gets its value. This is harmless, and the IDL comment already describes the contract correctly. No change needed.</p>
+</article>
+
+<h2>What looks good</h2>
+<ul class="good">
+  <li><span class="pill ok">Security</span> Input from Remote Settings is validated where it enters: <code>key_id</code> must be an integer from 0 to 255, base64 decoding is wrapped in try/catch (a non-string value throws a TypeError there, which is caught), and the first byte must match. Synced data is signature-verified by Remote Settings. Logs contain only public values.</li>
+  <li><span class="pill ok">Architecture</span> Follows the pattern of the existing <code>UrlClassifierRemoteSettingsService</code>. The <code>moz-src:///</code> path, <code>MOZ_SRC_FILES</code>, and <code>components.conf</code> entry match current tree conventions.</li>
+  <li><span class="pill ok">API</span> The IDL documents the main-thread-only rule, the <code>null</code> case, and the observer contract. The change topic fires only when the key bytes actually change.</li>
+  <li><span class="pill ok">Race handling</span> The <code>synced</code> guard correctly lets a newer sync win over a stale <code>get()</code> result. Remote Settings does not emit <code>sync</code> from <code>get()</code>'s sync-if-empty path (bug 1761953), so the guard only applies to real concurrent syncs.</li>
+  <li><span class="pill ok">Performance</span> Initialization is lazy and the work is small: one record and a ~41-byte comparison.</li>
+  <li><span class="pill ok">Process</span> Small, single-purpose change with tests, and a clear commit title and summary.</li>
+</ul>
+
+<h2>Caveats</h2>
+<ul class="note">
+  <li>The tests were <strong>not run</strong> for this review. Only the diff was available, with no build, and the revision does not link a try push.</li>
+  <li>No module skill covers URL Classifier: the mots module has no <code>review_group</code>. The skill used instead came from <code>anti-tracking-reviewers-rotation</code>, based on only 9 revisions of mostly C++ storage-access work, so it added little that was specific to this patch. Most findings come from general Gecko review checked against the tree.</li>
+</ul>
+
+</main>
+</body>
+</html>
