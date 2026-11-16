@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Review summary — D339185 (Bug 2071888)</title>
+<title>Review summary — D339185 (Bug 2071888), round 2</title>
 <style>
   :root {
     --bg: #fbfbfe; --fg: #15141a; --muted: #5b5b66; --card: #ffffff; --border: #e0e0e6;
@@ -80,181 +80,153 @@
 <body>
 <main>
 
-<h1>Review summary: D339185</h1>
+<h1>Review summary: D339185 (round 2)</h1>
 <p class="sub">Bug 2071888: Add <code>nsIUrlClassifierRealTimeKeyService</code>, which fetches the OHTTP key config for Safe Browsing V5 real-time mode</p>
 
 <dl class="meta">
-  <dt>Revision</dt><dd><a href="https://phabricator.services.mozilla.com/D339185">D339185</a> (Needs Review, r?dimi)</dd>
+  <dt>Revision</dt><dd><a href="https://phabricator.services.mozilla.com/D339185">D339185</a> (Needs Review, r?dimi), diff 1429732</dd>
   <dt>Bug</dt><dd><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=2071888">2071888</a></dd>
   <dt>Module</dt><dd>URL Classifier (<code>toolkit/components/url-classifier/</code>)</dd>
-  <dt>Size</dt><dd>6 files, ~240 added lines (new JS service, IDL, xpcshell test, build/registration entries)</dd>
-  <dt>Review tools</dt><dd>① Firefox module review, using a skill generated from <code>anti-tracking-reviewers-rotation</code> history &nbsp;·&nbsp; ② <code>/agent-skills:review</code> (five-axis review)</dd>
-  <dt>Checked against</dt><dd>mozilla-central at <code>fa06514c63489</code> (2026-10-28)</dd>
+  <dt>Size</dt><dd>6 files, ~285 added lines (new JS service, IDL, xpcshell test, build/registration entries)</dd>
+  <dt>Review tools</dt><dd>① Firefox module review (generic URL-classifier-aware review; no module skill fits) &nbsp;·&nbsp; ② <code>/agent-skills:review</code> (five-axis review)</dd>
+  <dt>Checked against</dt><dd>mozilla-central at <code>52e88467dc436</code> (2026-11-14)</dd>
 </dl>
 
-<div class="verdict">
-  <span class="pill imp">Request changes</span>
-  <div><strong>Close to landable.</strong> One issue needs fixing first: a failed first load is never retried. Everything else is a question or an optional suggestion.</div>
+<div class="verdict" style="border-left-color:var(--q)">
+  <span class="pill q">Approve with changes</span>
+  <div><strong>The round-1 blocker is fixed:</strong> a failed load is now retried. That retry brings a new issue, though: while the key is missing, each call can start a network sync. Fix this with <code>syncIfEmpty: false</code>. The rest are suggestions.</div>
 </div>
 
 <div class="tiles">
   <div class="tile"><div class="n" style="color:var(--imp)">1</div><div class="l">Important</div></div>
-  <div class="tile"><div class="n" style="color:var(--q)">2</div><div class="l">Questions for the author</div></div>
-  <div class="tile"><div class="n" style="color:var(--sug)">3</div><div class="l">Suggestions</div></div>
+  <div class="tile"><div class="n" style="color:var(--sug)">4</div><div class="l">Suggestions</div></div>
   <div class="tile"><div class="n" style="color:var(--nit)">3</div><div class="l">Nits</div></div>
+  <div class="tile"><div class="n" style="color:var(--ok)">3</div><div class="l">Round-1 items resolved</div></div>
 </div>
 
 <h2>Findings</h2>
 <p class="note">Line numbers are in the new file <code>UrlClassifierRealTimeKeyService.sys.mjs</code> unless another file is named. Tags show which review tool raised each finding.</p>
 
-<!-- 1 -->
 <article class="finding">
   <header>
     <span class="pill imp">Important</span>
-    <h3>1. A failed first load is never retried</h3>
+    <h3>1. While the key is missing, every call can trigger a Remote Settings sync from the server</h3>
     <span class="src both">Both tools</span>
   </header>
-  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:64–92 · correctness</div>
-  <p><code>#initPromise</code> is set only once. If <code>rs.get()</code> throws, the error is logged, <code>#config</code> stays <code>null</code>, and the promise still resolves. Every later <code>getKeyConfig()</code> returns <code>null</code> without retrying. Recovery only comes from the next <code>sync</code> event: a push broadcast or the 24h poll (<code>services.settings.poll_interval</code> = 86400).</p>
-  <p>This is most likely on a fresh profile that is offline the first time a real-time check runs. With an empty local DB and no dump, <code>get()</code> has to go to the network.</p>
-  <p><strong>Fix:</strong> register the <code>sync</code> listener only once, and clear <code>#initPromise</code> when <code>get()</code> fails so the next call retries. Add a test where <code>get()</code> rejects first and then succeeds.</p>
-<pre><code>#listening = false;
-#synced = false;
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:80–99 · performance / correctness</div>
+  <p><code>getKeyConfig()</code> now reruns <code>#load()</code> whenever <code>#config</code> is <code>null</code>, and <code>#load()</code> calls <code>RemoteSettings(...).get()</code> with its defaults (<code>syncIfEmpty: true</code>). There is no dump for <code>safebrowsing-v5-rt-key</code>. With an empty local DB, <code>get()</code> runs <code>pullStartupBundle()</code> and then a full <code>sync()</code> (<code>services/settings/RemoteSettingsClient.sys.mjs:474–516</code>). If that sync fails (offline, captive portal, server error), the DB stays empty. Each later real-time lookup then starts another server round trip and waits for it. Concurrent calls are de-duplicated; calls in sequence are not.</p>
+  <p>The first lookup on a fresh profile also waits on the network (round-1 question 2, which has no answer yet).</p>
+  <p><strong>Fix:</strong> read only local data and let the <code>sync</code> listener deliver the key. With an empty DB and <code>syncIfEmpty: false</code>, <code>get()</code> returns <code>[]</code> because <code>emptyListFallback</code> defaults to true. Precedent: <code>AddonManager.sys.mjs:4784</code>, <code>ExperimentAPI.sys.mjs:677</code>. If the first-use network fetch is wanted, keep it but rate-limit the retries.</p>
+<pre><code>records = await lazy.RemoteSettings(COLLECTION_NAME).get({
+  syncIfEmpty: false,
+});</code></pre>
+</article>
 
-async #init() {
-  let rs = lazy.RemoteSettings(COLLECTION_NAME);
-  if (!this.#listening) {
-    this.#listening = true;
-    rs.on("sync", ({ data: { current } }) => {
-      this.#synced = true;
-      // ...unchanged...
-    });
-  }
-
-  let records;
-  try {
-    records = await rs.get();
-  } catch (e) {
-    console.warn(`Failed to load ${COLLECTION_NAME}`, e);
-    this.#initPromise = null;
-    return;
-  }
-  if (!this.#synced) {
-    this.#config = parseKeyConfig(records);
+<article class="finding">
+  <header>
+    <span class="pill sug">Suggestion</span>
+    <h3>2. A load in flight can bring back a key that a sync just removed</h3>
+    <span class="src">Module review</span>
+  </header>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:70–78, 98 · correctness</div>
+  <p>The round-1 <code>synced</code> flag is gone, replaced by <code>this.#config ??= parseKeyConfig(records)</code>. That still lets a sync that sets a <em>valid</em> key win. But suppose a sync sets <code>#config = null</code> (record deleted or invalid) while <code>get()</code> is still resolving with the old records. <code>#load</code> then writes the old key back and sends no notification. This is rare, and the next sync corrects it.</p>
+<pre><code>#generation = 0;
+// in the sync handler: this.#generation++;
+async #load() {
+  let generation = this.#generation;
+  ...
+  if (generation == this.#generation) {
+    this.#config ??= parseKeyConfig(records);
   }
 }</code></pre>
 </article>
 
-<!-- 2 -->
-<article class="finding">
-  <header>
-    <span class="pill q">Question</span>
-    <h3>2. The first call on a fresh profile waits on the network</h3>
-    <span class="src both">Both tools</span>
-  </header>
-  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:83–88 · performance</div>
-  <p>There is no <code>safebrowsing-v5-rt-key</code> dump in <code>services/settings/dumps/main</code>. When the local DB is empty, <code>get()</code> runs <code>pullStartupBundle()</code> and then a full <code>sync()</code> before it resolves. The first real-time lookup therefore waits on a network round trip.</p>
-  <p><strong>Ask:</strong> is a dump planned? If not, does the caller fall back (for example, to local-list mode) when the key is slow to arrive or <code>null</code>? Either answer is fine, but it should be written down in the bug.</p>
-</article>
-
-<!-- 3 -->
-<article class="finding">
-  <header>
-    <span class="pill q">Question</span>
-    <h3>3. A malformed record replaces a working key with null</h3>
-    <span class="src both">Both tools</span>
-  </header>
-  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:76–81 · correctness</div>
-  <p>If an invalid <code>latest</code> record is published, the service drops the last good key, sets <code>null</code>, and fires <code>safebrowsing-realtime-key-changed</code>. That is probably right, because a rotated key may already be invalid on the server. Please confirm it is intended and that consumers handle <code>null</code> after the notification.</p>
-</article>
-
-<!-- 4 -->
 <article class="finding">
   <header>
     <span class="pill sug">Suggestion</span>
-    <h3>4. Every caller gets the same mutable <code>Uint8Array</code></h3>
+    <h3>3. Every caller still gets the same mutable <code>Uint8Array</code></h3>
     <span class="src">Five-axis review</span>
   </header>
-  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:67 · correctness</div>
-  <p><code>getKeyConfig()</code> returns the cached <code>#config</code> instance itself. If a JS consumer changes it in place (for example, zeroing it after use), the cached key is corrupted. The next <code>isSameConfig</code> check then compares against bad data. C++ callers are not affected, because XPConnect copies the array.</p>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:88 · correctness</div>
+  <p>Raised in round 1 and not yet changed. JS consumers in the parent process share the system global and get the cached instance itself. An in-place change corrupts the key for every consumer and confuses <code>isSameConfig</code>.</p>
 <pre><code>return this.#config?.slice() ?? null;</code></pre>
 </article>
 
-<!-- 5 -->
 <article class="finding">
   <header>
     <span class="pill sug">Suggestion</span>
-    <h3>5. Test coverage gaps</h3>
+    <h3>4. Limit the component to the parent process</h3>
+    <span class="src">Module review</span>
+  </header>
+  <div class="loc">components.conf:110–115 · architecture</div>
+  <p>Remote Settings is parent-only, but the IDL only says "Main thread only". Add <code>'processes': ProcessSelector.MAIN_PROCESS_ONLY</code> so a content-process <code>getService</code> fails at once instead of creating an RS client (several toolkit <code>components.conf</code> files already do this, e.g. <code>captivedetect</code>).</p>
+</article>
+
+<article class="finding">
+  <header>
+    <span class="pill sug">Suggestion</span>
+    <h3>5. Test gaps</h3>
     <span class="src both">Both tools</span>
   </header>
-  <div class="loc">tests/unit/test_realtime_key_service.js · correctness</div>
+  <div class="loc">tests/unit/test_realtime_key_service.js:63–83 · correctness</div>
   <ul>
-    <li>No test where <code>get()</code> fails or the DB is empty. This is the path in finding 1.</li>
-    <li>No test for a <code>sync</code> arriving while <code>get()</code> is still pending, which is the case the <code>synced</code> flag exists for. Make <code>get()</code> wait on a promise and emit <code>sync</code> in the meantime.</li>
-    <li>The tasks depend on each other's state through the singleton service. Add a short comment at the top of the file so anyone adding a task in the middle knows.</li>
+    <li><code>test_retry_after_failed_load</code> stubs <code>get()</code> to <em>resolve</em> <code>[]</code>, so the <code>catch</code> path (rejection) is never run. Add <code>stub.onFirstCall().rejects(new Error())</code>, or test both.</li>
+    <li>No test that concurrent <code>getKeyConfig()</code> calls share one <code>get()</code>.</li>
+    <li>No test for a <code>sync</code> while a load is in flight (finding 2).</li>
+    <li>The tasks depend on each other's state through the singleton. A note at the top of the file would help.</li>
   </ul>
 </article>
 
-<!-- 6 -->
-<article class="finding">
-  <header>
-    <span class="pill sug">Suggestion</span>
-    <h3>6. Explain why the <code>synced</code> flag exists</h3>
-    <span class="src">Five-axis review</span>
-  </header>
-  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:72–90 · readability</div>
-  <p>A <code>sync</code> event that fires while <code>get()</code> is pending has newer records than <code>get()</code> will return, so it must win. That is not obvious from the code, and someone simplifying it later could bring the race back. Suggested comment:</p>
-<pre><code>// A "sync" event that fires while get() is pending carries newer records
-// than get() will return.</code></pre>
-</article>
-
-<!-- 7 -->
 <article class="finding">
   <header>
     <span class="pill nit">Nit</span>
-    <h3>7. Validation only checks the first byte</h3>
+    <h3>6. The IDL comment says notifications start after the first <code>getKeyConfig()</code></h3>
     <span class="src">Module review</span>
   </header>
-  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:41 · correctness</div>
-  <p>The only structural check is <code>config[0] == key_id</code>, so a truncated config is accepted. This is fine if the OHTTP layer rejects it later. A cheap minimum-length check here would fail earlier and log a clearer warning.</p>
+  <div class="loc">nsIUrlClassifierRealTimeKeyService.idl:12–15 · readability</div>
+  <p>The <code>sync</code> listener is registered in the constructor, so notifications start once the service is instantiated (<code>getService</code>), even before <code>getKeyConfig()</code> is called. Either reword the comment or register the listener lazily.</p>
 </article>
 
-<!-- 8 -->
 <article class="finding">
   <header>
     <span class="pill nit">Nit</span>
-    <h3>8. Document the byte layout in <code>makeKeyConfig</code></h3>
-    <span class="src">Five-axis review</span>
-  </header>
-  <div class="loc">tests/unit/test_realtime_key_service.js:18–31 · readability</div>
-  <p>Add a one-line comment giving the layout: key_id, KEM <code>0x0020</code> (X25519), 32-byte public key, cipher-suite length 4, KDF 1, AEAD 1. Readers can then check it against RFC 9458 §3.1.</p>
-</article>
-
-<!-- 9 -->
-<article class="finding">
-  <header>
-    <span class="pill nit">Nit</span>
-    <h3>9. The topic can fire before the first <code>getKeyConfig()</code> resolves</h3>
+    <h3>7. Validation still checks only the first byte</h3>
     <span class="src">Module review</span>
   </header>
-  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:73–81 · FYI</div>
-  <p>If a sync arrives during init, observers are notified before the first caller gets its value. This is harmless, and the IDL comment already describes the contract correctly. No change needed.</p>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:46 · correctness</div>
+  <p>Carried over from round 1. A truncated config passes. A minimum-length check (1 + 2 + N<sub>pk</sub> + 2 + 4) would fail earlier and log a clearer warning. It is also fine to leave the full check to the OHTTP layer, if the IDL says so.</p>
 </article>
+
+<article class="finding">
+  <header>
+    <span class="pill nit">Nit</span>
+    <h3>8. Loose equality on Remote Settings data; byte layout comment in the test</h3>
+    <span class="src">Five-axis review</span>
+  </header>
+  <div class="loc">UrlClassifierRealTimeKeyService.sys.mjs:27, 46, 57 · tests/unit/test_realtime_key_service.js:20–33 · readability</div>
+  <p>Use <code>===</code> / <code>!==</code> when comparing untrusted record fields. Round-1 nit, still open: a one-line comment in <code>makeKeyConfig</code> giving the RFC 9458 §3.1 layout (key_id, KEM X25519, 32-byte pk, suites length 4, KDF 1, AEAD 1).</p>
+</article>
+
+<h2>Round-1 status</h2>
+<ul class="good">
+  <li><span class="pill ok">Fixed</span> #1 Failed first load never retried: <code>#loadPromise</code> is now cleared in <code>finally</code>, and a test covers the retry. This is what introduces finding 1 above.</li>
+  <li><span class="pill ok">Resolved</span> #3 A malformed record replaces the key with null: now stated in the commit summary as the intended behaviour, and tested (<code>test_key_id_mismatch</code>, <code>test_invalid_base64</code>, <code>test_record_deleted</code>).</li>
+  <li><span class="pill ok">Obsolete</span> #6 Comment on the <code>synced</code> flag: the flag was removed (see finding 2).</li>
+  <li><span class="pill q">Open</span> #2 network wait on first call (merged into finding 1), #4 mutable array (finding 3), #5 tests (finding 5), #7 validation (finding 7), #8 byte layout comment (finding 8).</li>
+</ul>
 
 <h2>What looks good</h2>
 <ul class="good">
-  <li><span class="pill ok">Security</span> Input from Remote Settings is validated where it enters: <code>key_id</code> must be an integer from 0 to 255, base64 decoding is wrapped in try/catch (a non-string value throws a TypeError there, which is caught), and the first byte must match. Synced data is signature-verified by Remote Settings. Logs contain only public values.</li>
-  <li><span class="pill ok">Architecture</span> Follows the pattern of the existing <code>UrlClassifierRemoteSettingsService</code>. The <code>moz-src:///</code> path, <code>MOZ_SRC_FILES</code>, and <code>components.conf</code> entry match current tree conventions.</li>
-  <li><span class="pill ok">API</span> The IDL documents the main-thread-only rule, the <code>null</code> case, and the observer contract. The change topic fires only when the key bytes actually change.</li>
-  <li><span class="pill ok">Race handling</span> The <code>synced</code> guard correctly lets a newer sync win over a stale <code>get()</code> result. Remote Settings does not emit <code>sync</code> from <code>get()</code>'s sync-if-empty path (bug 1761953), so the guard only applies to real concurrent syncs.</li>
-  <li><span class="pill ok">Performance</span> Initialization is lazy and the work is small: one record and a ~41-byte comparison.</li>
-  <li><span class="pill ok">Process</span> Small, single-purpose change with tests, and a clear commit title and summary.</li>
+  <li><span class="pill ok">Security</span> The key comes from a signed Remote Settings collection. <code>key_id</code> is range-checked, base64 decoding is wrapped in try/catch, and the first byte must match. Logs contain only <code>key_id</code>, never key material.</li>
+  <li><span class="pill ok">Simplicity</span> Shorter than round 1: a constructor-registered listener, a de-duplicated load promise, and <code>??=</code> replace the init and synced bookkeeping.</li>
+  <li><span class="pill ok">Architecture</span> <code>moz-src:///</code>, <code>MOZ_SRC_FILES</code>, private class fields, and an RS listener-plus-<code>get()</code> pattern that matches <code>UrlClassifierRemoteSettingsService</code>.</li>
+  <li><span class="pill ok">API</span> The change topic fires only when the bytes actually change (<code>test_unchanged_key_does_not_notify</code>).</li>
 </ul>
 
 <h2>Caveats</h2>
 <ul class="note">
-  <li>The tests were <strong>not run</strong> for this review. Only the diff was available, with no build, and the revision does not link a try push.</li>
-  <li>No module skill covers URL Classifier: the mots module has no <code>review_group</code>. The skill used instead came from <code>anti-tracking-reviewers-rotation</code>, based on only 9 revisions of mostly C++ storage-access work, so it added little that was specific to this patch. Most findings come from general Gecko review checked against the tree.</li>
+  <li>The tests were <strong>not run</strong> for this review. Only the diff was available, with no local build.</li>
+  <li>No installed module skill covers URL Classifier (the mots module has no <code>review_group</code>). Dimi chose a generic URL-classifier-aware review over the poorly matched <code>anti-tracking-reviewers-rotation</code> skill. Its claims were checked against the tree (Remote Settings <code>get()</code> semantics, sibling <code>components.conf</code> files).</li>
 </ul>
 
 </main>
