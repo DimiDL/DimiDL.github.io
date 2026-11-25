@@ -15,6 +15,16 @@ Set the item's `bug` field in `data.json` to the bug number and push. Any
 RESOLVED or VERIFIED bug counts as done; the burndown is built from each bug's
 `cf_last_resolved` date.
 
+## Review groups
+
+Each item's `reviewers` lists the Phabricator groups likely to review its
+conversion, most specific first; a trailing `!` marks a group Herald adds as
+blocking. They come from `./mach file-info reviewers <path>` (Herald rules and
+`mots.yaml`), plus the group that reviewed most of the file's recent history on
+mozilla-central where one clearly dominates. Every conversion also edits
+`eslint-file-globals.config.mjs`, so Herald adds `#frontend-codestyle-reviewers`
+as blocking on top of these.
+
 ## Grouping
 
 The table is grouped by the `gBrowserInit` function each consumer is invoked

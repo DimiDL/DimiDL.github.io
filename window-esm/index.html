@@ -41,6 +41,9 @@
   .st-assigned { background: #deeaff; color: #0047b3; }
   .st-filed { background: #fff4de; color: #8a4a00; }
   .st-none { background: #f0f0f4; color: var(--faint); }
+  .rev { display: block; font-size: 12px; white-space: nowrap; }
+  .rev + .rev { color: var(--muted); }
+  .rev .blocking { color: var(--faint); }
   tr.group td { padding-top: 22px; border-bottom: 1px solid #d7d7de; }
   tr.group code { font-weight: 700; font-size: 14px; }
   .gcount { margin-left: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -72,7 +75,7 @@
 
   <table>
     <thead>
-      <tr><th>Item</th><th class="num">Lines</th><th>Bug</th><th>Status</th><th>Assignee</th><th>Fixed</th></tr>
+      <tr><th>Item</th><th class="num">Lines</th><th>Bug</th><th>Review</th><th>Status</th><th>Assignee</th><th>Fixed</th></tr>
     </thead>
     <tbody id="rows"></tbody>
   </table>
@@ -233,12 +236,19 @@ function renderRow(item, firstGroup) {
   } else {
     status = `<span class="pill st-${item.state}">${esc(b.status)}${b.resolution ? " " + esc(b.resolution) : ""}</span>`;
   }
+  const reviewers = (item.reviewers || [])
+    .map(r => {
+      const blocking = r.endsWith("!");
+      const name = blocking ? r.slice(0, -1) : r;
+      return `<code class="rev">#${esc(name)}${blocking ? ' <span class="blocking">(blocking)</span>' : ""}</code>`;
+    })
+    .join("");
   const who = esc(assigneeName(b));
   const fixed = item.state == "fixed" && b.cf_last_resolved ? fmtDate(new Date(b.cf_last_resolved)) : "";
   if (firstGroup) {
-    return `<tr class="repeat"><td colspan="6">${file}${obj}${repeat}</td></tr>`;
+    return `<tr class="repeat"><td colspan="7">${file}${obj}${repeat}</td></tr>`;
   }
-  return `<tr><td>${file}${obj}${note}</td><td class="num">${item.lines.toLocaleString("en-US")}</td><td>${bug}</td><td>${status}</td><td>${who}</td><td class="date">${fixed}</td></tr>`;
+  return `<tr><td>${file}${obj}${note}</td><td class="num">${item.lines.toLocaleString("en-US")}</td><td>${bug}</td><td>${reviewers}</td><td>${status}</td><td>${who}</td><td class="date">${fixed}</td></tr>`;
 }
 
 function renderRows(groups, items) {
@@ -255,7 +265,7 @@ function renderRows(groups, items) {
     }).join("");
     const extra = repeats.length ? ` <span class="muted">+${repeats.length} listed above</span>` : "";
     html +=
-      `<tr class="group"><td colspan="6"><code>gBrowserInit.${esc(group.id)}</code>` +
+      `<tr class="group"><td colspan="7"><code>gBrowserInit.${esc(group.id)}</code>` +
       ` <span class="gcount">${done} / ${own.length}</span><span class="gbar">${bar}</span>${extra}</td></tr>`;
     html += own.map(i => renderRow(i, null)).join("");
     html += repeats.map(i => renderRow(i, i.firstGroup)).join("");
