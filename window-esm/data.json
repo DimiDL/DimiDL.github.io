@@ -257,7 +257,7 @@
     {
       "path": "browser/base/content/browser-profiles.js",
       "lines": 840,
-      "bug": null,
+      "bug": 2097693,
       "reviewers": [
         "profiles-reviewers",
         "firefox-desktop-core-reviewers"
