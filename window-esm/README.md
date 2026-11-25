@@ -25,6 +25,12 @@ mozilla-central where one clearly dominates. Every conversion also edits
 `eslint-file-globals.config.mjs`, so Herald adds `#frontend-codestyle-reviewers`
 as blocking on top of these.
 
+`featureReviewers` names the team that owns the feature a script implements,
+where it differs from the groups above (for example `#necko-reviewers` for the
+captive portal UI). They are taken from commits that touched the file with at
+most three review groups, so tree-wide sweeps don't count. A plain conversion
+doesn't need them; ask them when the change affects their feature.
+
 ## Grouping
 
 The table is grouped by the `gBrowserInit` function each consumer is invoked

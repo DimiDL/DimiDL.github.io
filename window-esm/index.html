@@ -43,7 +43,7 @@
   .st-none { background: #f0f0f4; color: var(--faint); }
   .rev { display: block; font-size: 12px; white-space: nowrap; }
   .rev + .rev { color: var(--muted); }
-  .rev .blocking { color: var(--faint); }
+  .rev .blocking, .rev.feature { color: var(--faint); }
   tr.group td { padding-top: 22px; border-bottom: 1px solid #d7d7de; }
   tr.group code { font-weight: 700; font-size: 14px; }
   .gcount { margin-left: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -242,7 +242,10 @@ function renderRow(item, firstGroup) {
       const name = blocking ? r.slice(0, -1) : r;
       return `<code class="rev">#${esc(name)}${blocking ? ' <span class="blocking">(blocking)</span>' : ""}</code>`;
     })
-    .join("");
+    .join("") +
+    (item.featureReviewers || [])
+      .map(r => `<code class="rev feature" title="Feature team; ask when the change affects their area">#${esc(r)} (feature)</code>`)
+      .join("");
   const who = esc(assigneeName(b));
   const fixed = item.state == "fixed" && b.cf_last_resolved ? fmtDate(new Date(b.cf_last_resolved)) : "";
   if (firstGroup) {

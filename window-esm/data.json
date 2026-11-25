@@ -67,6 +67,9 @@
       "reviewers": [
         "firefox-desktop-core-reviewers"
       ],
+      "featureReviewers": [
+        "fxview-reviewers"
+      ],
       "functions": [
         "onDOMContentLoaded"
       ]
@@ -151,6 +154,9 @@
       "reviewers": [
         "firefox-desktop-core-reviewers"
       ],
+      "featureReviewers": [
+        "extension-reviewers"
+      ],
       "functions": [
         "onDOMContentLoaded",
         "_delayedStartup"
@@ -162,6 +168,9 @@
       "bug": null,
       "reviewers": [
         "firefox-desktop-core-reviewers"
+      ],
+      "featureReviewers": [
+        "anti-tracking"
       ],
       "functions": [
         "onLocationChange",
@@ -201,6 +210,9 @@
       "reviewers": [
         "firefox-desktop-core-reviewers"
       ],
+      "featureReviewers": [
+        "urlbar-reviewers"
+      ],
       "functions": [
         "_delayedStartup"
       ]
@@ -233,6 +245,9 @@
       "bug": null,
       "reviewers": [
         "firefox-desktop-core-reviewers"
+      ],
+      "featureReviewers": [
+        "extension-reviewers"
       ],
       "functions": [
         "onLoad",
@@ -268,6 +283,9 @@
       "bug": null,
       "reviewers": [
         "firefox-desktop-core-reviewers"
+      ],
+      "featureReviewers": [
+        "necko-reviewers"
       ],
       "functions": [
         "onLoad",
@@ -314,6 +332,9 @@
       "bug": null,
       "reviewers": [
         "firefox-desktop-core-reviewers"
+      ],
+      "featureReviewers": [
+        "gfx-reviewers"
       ],
       "functions": [
         "_schedulePerWindowIdleTasks"
